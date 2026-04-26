@@ -1,0 +1,201 @@
+\documentclass{article} % For LaTeX2e
+\usepackage{iclr2026_conference,times}
+
+% Optional math commands from https://github.com/goodfeli/dlbook_notation.
+\input{math_commands.tex}
+
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
+\newtheorem{definition}{Definition}
+\newtheorem{Note}{Note}
+\newtheorem{assumption}{Assumption}
+\newtheorem{remark}{Remark}
+\newtheorem{example}{Example}
+
+\usepackage{hyperref}
+\usepackage{cleveref}
+\crefname{assumption}{Assumption}{Assumptions}
+\crefname{equation}{Equation}{Equations}
+\crefname{theorem}{Theorem}{Theorems}
+\crefname{lemma}{Lemma}{Lemmas}
+\crefname{proposition}{Proposition}{Propositions}
+\crefname{corollary}{Corollary}{Corollaries}
+\crefname{definition}{Definition}{Definitions}
+\crefname{note}{Note}{Notes}
+\crefname{table}{Table}{Tables}
+\crefname{figure}{Figure}{Figures}
+\crefname{example}{Example}{Examples}
+\crefname{section}{Section}{Sections}
+
+\title{}
+
+\author{}
+
+\newcommand{\fix}{\marginpar{FIX}}
+\newcommand{\new}{\marginpar{NEW}}
+
+\begin{document}
+
+
+\maketitle
+
+\begin{abstract}
+\end{abstract}
+
+\section{Introduction}
+
+\section{Related Work}
+
+\section{Theory}
+\label{sec:theory}
+
+We develop a theoretical framework for understanding how data augmentation induces equivariance in variational Bayesian inference. We proceed in three steps: first, we characterize when exponential families are closed under group actions (\cref{sec:closed-exponential-family-under-group-actions}); second, we show that training on augmented data makes the ELBO invariant, driving the optimal variational posterior towards equivariant solutions (\cref{sec:data-augmentation-induces-equivariance}); third, we propose a complementary symmetrization mechanism and analyze its properties (\cref{sec:symmeterization-of-the-vatiational-posterior}).
+
+\subsection{Preliminaries}
+\label{sec:preliminaries}
+
+We introduce the mathematical tools used throughout this paper. We begin with exponential families, which provide the structural backbone for our theoretical analysis, before reviewing variational inference and the group theoretic concepts needed to formalize symmetry.
+
+\textbf{Exponential families.} A probability distribution belongs to the exponential family if its density can be written as
+\begin{equation}
+    q_{\eta}(\theta) = h(\theta) \exp{\eta^{\top}} T(\theta) - A(\eta)),
+\end{equation}
+where $h(\theta)$ is the base measure, $\eta \in H \subset \mathbb{R}^{k}$ is the natural parameter, $T(\theta) \in \mathbb{R}^{k}$ is the sufficient statistic, and $A(\eta) = \log \int h(\theta) \exp(\eta^{\top} T(\theta)) d\theta$ is the log-partition function. We denote a regular minimal exponential family on weights $\theta$ as $\mathcal{Q} = \{q_{\eta}(\theta) \mid \eta \in H\}$, where regularity means that $H$ is open and minimal, i.e., the components of $T(\theta)$ are linearly independent.
+
+\textbf{Group actions and push-forward distributions.} A group action $g \in G$ acts on the parameter space $\Theta$ via a representation $\rho: G \rightarrow \Theta$, where $\rho(g)$ maps $\theta \mapsto \rho(g) \theta$. The push-forward of a distribution $q$ under $g \in G$ is defined as
+\begin{equation}
+    \mathcal{T}_{g} \# q(B) = q(\rho(g)^{-1}(B))
+\end{equation}
+for any measurable set $B$, with density
+\begin{equation}
+    \mathcal{T}_{g} \# q_{\eta} (\theta) = q(\rho(g)^{-1}(\theta)) \left|\det D(\rho(g)^{-1})(\theta)\right|.
+\end{equation}
+A distribution $q$ is called $G$-invariant if $\mathcal{T}_{g} \# q = q$ for all $g \in G$.
+
+\textbf{Variational inference.} Given a dataset $\mathcal{D} = \{(x_{i}, y_{i})\}_{i=1}^{N_{0}}$ and a prior $p_{0}(\theta)$, the true posterior $p(\theta \mid \mathcal{D})$ is typically intractable. Variational inference (VI) approximates it by solving
+\begin{equation}
+    q^{\ast}_{\eta} = \arg \min_{q_{\eta} \in \mathcal{Q}} \KL(q_{\eta} \Vert p(\theta \mid \mathcal{D})),
+\end{equation}
+which is equivalent to maximizing the evidence lower bound (ELBO)
+\begin{equation}
+    \mathcal{L}_{\mathrm{ELBO}}(\eta) = \mathbb{E}_{q_{\eta}}[\log p(\mathcal{D} \mid \theta)] - \KL(q_{\eta} \Vert p(\theta)).
+\end{equation}
+We define a $\beta$-weighted variant of ELBO as
+\begin{equation}
+    \mathcal{L}_{\beta}(\eta) := \underbrace{\frac{1}{N}\,\mathbb{E}_{q_{\eta}}[-\log p(\mathcal{D}_{\mathrm{aug}} \mid \theta)]}_{=:\,R_{\mathrm{aug}}(\eta)} + \beta \KL(q_{\eta} \Vert p_{0}).
+\end{equation}
+The posterior predictive distribution is then approximated by
+\begin{equation}
+    p(y \mid x, \mathcal{D}) \approx \mathbb{E}_{\theta \sim q_{\eta}}[f(x; \theta)],
+\end{equation}
+where $f(x; \theta)$ is the neural network with weights $\theta$. In practice, this expectation is estimated by Monte Carlo sampling.
+
+\textbf{$G$-equivariance and $G_{\varepsilon}$-equivariance.} A neural network $f(\cdot; \theta): \mathcal{X} \rightarrow \mathcal{Y}$ is $G$-equivariant if $f(gx; \theta) = g \cdot f(x; \theta)$ for all $x \in \mathcal{X}$ and $g \in G$, where $G$ acts on both input and output spaces. The posterior predictive map $F_{\eta}(x) = \mathbb{E}_{\theta \sim q_{\eta}}[f(x; \theta)]$ is $G$-equivariant if $F_{\eta}(gx) = g \cdot F_{\eta}(x)$. If $\Delta^{\mathrm{eq}}_{F}(\eta) := \mathbb{E}_{x \sim P_{\mathcal{X}},\, g \sim \nu_{G}}\!\left[\left\|F_{\eta}(gx) - g \cdot F_{\eta}(x)\right\|^{2}\right] \leq \varepsilon$, then we say $F_{\eta}$ is $G_{\varepsilon}$-equivariant (under $P_\mathcal{X}$). When $\varepsilon=0$, this reduces to exact $G$-equivariance $P_X$-almost surely.
+
+\textbf{Data augmentation.} Data augmentation constructs an augmented dataset $\mathcal{D}_{\mathrm{aug}} = \{(gx_{i}, gy_{i}) \mid g \in G, x_{i} \in \mathcal{D}\}$. Training on $D_{aug}$ exposes the model to all group-transformed versions of the data, which induces $G_{\varepsilon}$-equivariance in the posterior predictive map (shown in Section 3?).
+
+\subsection{Closed exponential family under group actions}
+\label{sec:closed-exponential-family-under-group-actions}
+
+In this section, we present the necessary and sufficient conditions that a variational family $\mathcal{Q}$ is preserved under the group action, i.e., $\mathcal{T} \# q_{\eta} \in \mathcal{Q}$ for all $g \in G$ and $q_{\eta} \in \mathcal{Q}$. This property is important for our symmetrization constructions in \cref{sec:data-augmentation-induces-equivariance}, and determines whether symmetrized distributions remain within the chosen variational family.
+
+\begin{theorem}[Closure under push-forward] A regular minimal exponential family $\mathcal{Q}$ is closed under the push-forward operator $\mathcal{T}_{g}$ for all $g \in G$ if and only if there exist $M_{g} \in \mathbb{R}^{k \times k}$, $d_{g} \in \mathbb{R}^{k}$, $b_{g} \in \mathbb{R}^{k}$ and $c_{g} \in \mathbb{R}$ such that for all $\theta \in \Theta$,
+\begin{align}
+    T(\rho(g)^{-1}(\theta)) &= M_{g} T(\theta) + d_{g}, \\
+    h(\rho(g)^{-1}(\theta)) \left|\det D(\rho(g)^{-1})(\theta)\right| &= h(\theta) \exp(b_{g}^{T} T(\theta) + c_{g}).
+\end{align}
+When these conditions hold, $\mathcal{T}_{g} \# q_{\eta} = q_{\eta_{g}}$ where $\eta_{g} = M_{g}^{T}\eta + b_{g}$, and the transformation of natural parameters $\phi_{g}(\eta)= M_{g}^{T}\eta + b_{g}$ forms a group representation of $G$ on $H$.
+\end{theorem}
+
+The theorem says that closure is equivalent to the sufficient statistic transforming affinely and the base measure transforming in a compatible way. The natural parameter transformation $\phi_{g}$ is always affine, consisting of a linear part $\pi(g)(\eta) = M_{g}^{\top} \eta$ and a translation $b_{g}$. This affine structure is central to the tractability of our symmetrization constructions.
+
+\begin{example}[Diagonal Gaussian under permutations]
+    
+\end{example}
+
+\subsection{Data augmentation induces equivariance}
+\label{sec:data-augmentation-induces-equivariance}
+
+We now show that training on the augmented dataset $\mathcal{D}_{\mathrm{aug}}$ with variational inference naturally pushes the optimal posterior towards equivariant solutions. We work under the following assumptions.
+
+\begin{assumption}[Invariant prior]
+\label{ass:invariant-prior}
+    The prior $p_{0} = q_{\eta_{0}}(\theta)$ for some $\eta_{0}$ is $G$-invariant, i.e., $\mathcal{T} \# p = p$ for all $g \in G$, or equivalently $\phi_{g}(\eta_{0}) = \eta_{0}$.
+\end{assumption}
+
+\begin{assumption}[Invariant likelihood]
+\label{ass:invariant-likelihood}
+    The augmented likelihood $L_{\mathrm{aug}}(\theta):=p(\mathcal{D}_{\mathrm{aug}}\mid\theta)$ is $G$-invariant, i.e., $L_{\mathrm{aug}}(\rho(g)^{-1}\theta)=L_{\mathrm{aug}}(\theta)$ for all $g \in G$.
+\end{assumption}
+
+\begin{proposition}[Invariance of ELBO]
+    Under \cref{ass:invariant-prior,ass:invariant-likelihood} and the volume-preserving condition $\left|\det D(\rho(g)^{-1})(\theta)\right| = 1$, the ELBO is invariant under the natural parameter transformation:
+    \begin{equation}
+        \mathcal{L}_{\mathrm{ELBO}}(\eta) = \mathcal{L}_{\mathrm{ELBO}}(\phi_{g}(\eta)), \, \forall g \in G, \eta \in H.
+    \end{equation}
+\end{proposition}
+
+\begin{proposition}[Invariance of optimal solutions]
+\label{prop:invariance-of-optimal-solutions}
+    The set of optimal natural parameters $H^{\ast} = \arg\max_{\eta \in H} \mathcal{L}_{\mathrm{ELBO}}(\eta)$ is closed under $\phi_{g}$ for all $g \in G$. If the optimum is unique, it satisfies $\phi_{g}(\eta^{\ast}) = \eta^{\ast}$, i.e., the optimal variational posterior is $G$-invariant.
+\end{proposition}
+
+\cref{prop:invariance-of-optimal-solutions} formalize the intuition behind data augmentation:: by making the training objective symmetric, augmentation ensures that the optimal solution inherits the same symmetry. When the optimum is not unique, the solution set forms a $G$-orbit, and any elements of this orbit is equally optimal.
+
+However, optimization in practice rarely converges to a perfectly invariant solution, both due to non-unique optima and finite data. We therefore quantify how close the learned solution is to equivariant optimum.
+
+\begin{theorem}[Convergence to equivariant solutions]
+\label{thm:convergence-to-equivariant-solutions}
+    Let  $R^{\ast}_{\mathrm{aug}} := \inf_{\eta \in H} R_{\mathrm{aug}}(\eta)$ be the optimal augmented risk, and let $\eta_{\beta}^{\ast}(p_{0}) \in \arg \min_{\eta \in H} \mathcal{L}_{\mathrm{\beta}}(\eta; p_{0})$ for a given prior $p_{0}$. Under \cref{ass:invariant-likelihood} and the volume-preserving condition:
+    \begin{enumerate}
+        \item The risk-optimal set $H^{\ast}_{R} := \arg\min_{\eta} R_{\mathrm{aug}}(\eta)$ is invariant under $\phi_{g}$ for all $g \in G$.
+        \item For any prior $p_{0} \in \mathcal{Q}$, $R_{\mathrm{aug}}(\eta^{\ast}_{\beta}(p_{0})) \leq R^{\ast}_{\mathrm{aug}} + \beta \cdot C(p_{0})$, where $C(p_{0}) := \inf_{\eta^{\ast} \in H^{\ast}_{R}} \KL(q_{\eta^{\ast}} \Vert p_{0})$.
+        \item As $\beta \rightarrow 0$ (equivalently $N \rightarrow \infty$), all minimizers achieve the same augmented risk $R^{\ast}_{\mathrm{aug}}$ regardless of the prior.
+    \end{enumerate}
+\end{theorem}
+
+The quantity $C(p_{0})$ measures how well the prior aligns with the risk-optimal solutions. A prior centered near the optimal orbit has small $C$, while a misaligned prior has large $C$. Since its influence is scaled by $\beta = 1/N$, with sufficient data the prior becomes irrelevant. This justifies the use of standard isotropic Gaussian priors in practice.
+
+\begin{theorem}[Complexity for $G_{\varepsilon}$-equivariance]
+\label{thm:complexity-for-G-e-equivariance}
+    With probability at least $1-\delta$, there exists constants $C_{\mathrm{data}}$ and $C_{\mathrm{mc}}$ such that
+    \begin{equation}
+        \Delta^{\mathrm{eq}}_{F}(\eta) \leq \widehat{\Delta}^{\mathrm{eq}}_{F}(\eta) + C_{\mathrm{data}}\sqrt{\frac{\log(2/\delta)}{N_0}} + C_{\mathrm{mc}}\sqrt{\frac{\log(4/\delta)}{T}},
+    \end{equation}
+    where $\widehat{\Delta}^{\mathrm{eq}}_{F}(\eta) := \frac{1}{N_{0}}\sum_{i=1}^{N_{0}} \frac{1}{|G|} \sum_{g \in G} \left\|\frac{1}{T} \sum_{t=1}^{T} f(gx_{i}; \theta^{(t)}) - g \cdot \left(\frac{1}{T} \sum_{t'=1}^{T} f(x_{i}; \theta^{(t')})\right)\right\|^{2}$ is a Monte Carlo estimation (MCE) of $\Delta^{\mathrm{eq}}_{F}(\eta)$ with independent samples $\{\theta^{(t)}\}_{t=1}^{T}$ and $\{\theta^{(t')}\}_{t'=1}^{T}$ from $q_{\eta}(\theta)$. For any target tolerance $\varepsilon = \varepsilon_{\mathrm{emp}} + \varepsilon_{\mathrm{data}} + \varepsilon_{\mathrm{mc}} > 0$, it is suffices to choose
+    \begin{equation}
+        N_0 \ge \frac{C_{\mathrm{data}}^2}{\varepsilon_{\mathrm{data}}^2}\log\frac{2}{\delta}, \quad T \ge \frac{C_{\mathrm{mc}}^2}{\varepsilon_{\mathrm{mc}}^2}\log\frac{4}{\delta}.
+\end{equation}
+\end{theorem}
+
+This theorem provides explicit data and sample size requirements to achieve $G_{\varepsilon}$-equivariance with high probability.
+
+\subsection{Symmetrization of the variational posterior}
+\label{sec:symmeterization-of-the-vatiational-posterior}
+
+\cref{prop:invariance-of-optimal-solutions} guarantees that the optimal solution is equivariant in the limit, but finite optimization may converge to a non-invariant point within the optimal orbit. We propose applying geometric averaging in the parameter space to explicitly enforce symmetry.
+
+\section{Experiments}
+
+We empirically evaluate our theoretical findings across two sets of experiments. \cref{sec:toy-experiment} validates the theoretical results of \cref{sec:closed-exponential-family-under-group-actions} on a controlled toy setting. \cref{sec:symmetrization-on-image-classification} compares the four symmetrization mechanisms on image classification benchmarks.
+
+\subsection{Toy experiment: Validating Theoretical Guarantees}
+\label{sec:toy-experiment}
+
+\subsection{Symmetrization on image classification}
+\label{sec:symmetrization-on-image-classification}
+
+% We consider the cyclic group $C_{4}$ acting by $\frac{\pi}{2}$ rotations. We evaluate four metrics: (1) classification loss, (2) classification accuracy, (3) orbit same prediction score, and (4) symmetric KL divergence between predictions on original and rotated inputs.
+
+We compared four strategies for equipping a fully convolutional Bayesian neural network with approximate $C_{4}$-equivariance on a limited training dataset. The training dataset comprises 5000 ramdom-choosen FashionMNIST training samples rotated by $0^{\circ}$, $90^{\circ}$, $180^{\circ}$, and $270^{\circ}$. All models share the same Gaussian variational family and are trained by optimizing an ELBO with standard Gaussian prior.
+
+
+
+
+\end{document}
