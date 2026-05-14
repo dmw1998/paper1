@@ -37,6 +37,7 @@
 \usepackage{multirow}
 \usepackage{colortbl}
 \usepackage{graphicx}
+\graphicspath{{./plots/}}
 \usepackage{enumerate}
 
 \title{}
@@ -61,9 +62,7 @@
 \section{Theory}
 \label{sec:theory}
 
-We develop a theoretical framework for understanding how data augmentation induces equivariance in variational Bayesian inference. We proceed in three steps: first, we characterize when exponential families are closed under group actions (\cref{sec:closed-exponential-family-under-group-actions}); second, we show that training on augmented data makes the ELBO invariant, driving the optimal variational posterior towards equivariant solutions (\cref{sec:data-augmentation-induces-equivariance}); third, we propose a complementary symmetrization mechanism and analyze its properties (\cref{sec:symmetrization-of-the-variational-posterior}).
-
-
+We develop a theoretical framework for understanding how data augmentation induces equivariance in variational Bayesian inference. We proceed in three steps: first, we characterize when exponential families are closed under group actions (\cref{sec:closed-exponential-family-under-group-actions}); second, we show that training on augmented data makes the ELBO invariant, driving the optimal variational posterior towards equivariant solutions (\cref{sec:data-augmentation-induces-equivariance}); third, we propose three complementary symmetrization mechanisms and analyze their properties (\cref{sec:symmetrization-of-the-variational-posterior}).
 
 \subsection{Preliminaries}
 \label{sec:preliminaries}
@@ -136,8 +135,24 @@ When these conditions hold, $\mathcal{T}_{g} \# q_{\eta} = q_{\eta_{g}}$ where $
 
 The theorem says that closure is equivalent to the sufficient statistic transforming affinely and the base measure transforming in a compatible way. The natural parameter transformation $\phi_{g}$ is always affine, consisting of a linear part $\pi(g)(\eta) = M_{g}^{\top} \eta$ and a translation $b_{g}$. This affine structure makes the symmetrization constructions in \cref{sec:symmetrization-of-the-variational-posterior} tractable and computationally efficient.
 
-\begin{example}
-    
+\begin{example}[Mean-field Gaussian under permutation actions]
+    Consider the mean-field Gaussian family $\mathcal{Q} = \{\mathcal{N}(\mu, \mathrm{diag}(\sigma^{2})): \mu \in \mathbb{R}^{d}, \sigma^{2} \in \mathbb{R}^{d}_{>0}\}$ on $\Theta = \mathbb{R}^{d}$, with sufficient statistic $T(\theta) = (\theta,\,\theta \odot \theta) \in \mathbb{R}^{2d}$, constant base measure $h(\theta) = (2 \pi)^{-d/2}$, and natural parameter $\eta = (\eta_{1}, \eta_{2})$ where ${\eta_{1}}_{i} = \mu_{i} / \sigma_{i}^{2}$ and ${\eta_{2}}_{i} = -1/(2 \sigma_{i}^{2})$. Suppose $G$ acts on $\Theta$ by a permutation representation $\rho(g) = R_{g}$.
+
+    Both conditions of \cref{thm:closure-under-push-forward} are met. Permutation matrices commute with Hadamard product, so
+    \begin{equation}
+        T(R_{g}^{-1} \theta) = \begin{pmatrix}
+            R_{g}^{-1} & 0 \\ 0 & R_{g}^{-1}
+        \end{pmatrix} T(\theta)
+    \end{equation}
+    giving $M_{g} = R_{g}^{-1} \oplus R_{g}^{-1}$ and $d_{g} = 0$. Since $|\det R_{g}^{-1}| = 1$ and $h$ is constant, $b_{g} = c_{g} = 0$. Using $R_{g}^{-\top} = R_{g}$, the induced natural-parameter transformation is
+    \begin{equation}
+        \phi_{g}(\eta) = M_{g}^{\top} \eta = (R_{g} \oplus R_{g}) \eta,
+    \end{equation}
+    which permutes the per-coordinate $\eta_{1}$ and $\eta_{2}$ entries. Equivalently,
+    \begin{equation}
+        \mathcal{T}_{g} \# \mathcal{N}(\mu, \mathrm{diag}(\sigma^{2})) = \mathcal{N}(R_{g} \mu, \mathrm{diag}(R_{g} \sigma^{2})),
+    \end{equation}
+    so the family is closed. The equivariant subspace $H_{G} = \{\eta \mid \phi_{g}(\eta) = \eta, \forall g \in G\}$ consists of natural parameters whose entries are constant on each $G$-orbit of weight indices. The geometric averaging construction of \cref{sec:symmetrization-of-the-variational-posterior} inherits closure here: the resulting precision $\tilde{\Lambda} = \tfrac{1}{|G|}\sum_{g}R_{g}\,\mathrm{diag}(\sigma^{-2})\,R_{g}^{\top}$ stays diagonal because each $R_{g}$ is a permutation. By contrast, an orthogonal action that mixes coordinates makes the quadratic block of $T(\rho(g)^{-1}\theta)$ non-affine in $T(\theta)$: closure fails and the diagonal family must be replaced by a full-covariance Gaussian.
 \end{example}
 
 \subsection{Data augmentation induces equivariance}
@@ -166,10 +181,11 @@ We now show that training on the augmented dataset $\mathcal{D}_{\mathrm{aug}}$ 
     \end{enumerate}
 \end{theorem}
 
-The proof is given in \cref{app:proof-of-thm-equivariance-of-vi}. This formalizes the intuition behind data augmentation: by making the training objective symmetric, augmentation ensures that the optimal solution inherits the same symmetry. When the optimum is not unique, the solution set forms a $G$-orbit, and any element of this orbit is equally optimal. (iii) is the key property exploited by the symmetrization mechanisms in \cref{sec:symmetrization-of-the-variational-posterior} that geometric averaging, projection, or expansion along orbit produces a posterior in $H_{G}$, and (iii) guarantees that subsequent gradient-based training preserves this equivariant structure. Therefore, the symmetrization needs to be applied only once.
+The proof is given in \cref{app:proof-of-thm-equivariance-of-vi}. This formalizes the intuition behind data augmentation: by making the training objective symmetric, augmentation ensures that the optimal solution inherits the same symmetry. When the optimum is not unique, the solution set forms a $G$-orbit, and any element of this orbit is equally optimal. (iii) is the key property exploited by the symmetrization mechanisms in \cref{sec:symmetrization-of-the-variational-posterior}: each of geometric averaging, projection, and expansion along orbit produces a posterior in $H_{G}$, and (iii) guarantees that subsequent gradient-based training preserves this equivariant structure. Therefore, the symmetrization needs to be applied only once.
 
 In practice, optimization rarely converges to a perfectly invariant solution, due to non-unique optima and finite data. We quantify this gap with two 
 additional results. The proofs are in \cref{app:proof-of-thm-equivariance-of-vi,app:proof-of-complexity-for-G-e-equivariance}.
+
 % : the sub-optimality risk is at most $\beta \cdot C(p_{0})$, where $C(p_{0})$ measures how well the prior aligns with the optimal orbit and $\beta = 1/N$ scales with dataset size (\cref{thm:convergence-to-equivariant-solutions} in \cref{app:proof-of-thm-equivariance-of-vi}). As $N \to \infty$, this gap vanishes regardless of the prior choice. We also provide explicit sample size and Monte Carlo requirements to achieve $G_{\varepsilon}$-equivariance with high probability: the equivariance defect decays as $\mathcal{O}(1/\sqrt{N_{0}})$ in the size of the dataset and as $\mathcal{O}(1/\sqrt{T})$ in Monte Carlo samples (\cref{thm:complexity-for-G-e-equivariance} in \cref{app:proof-of-complexity-for-G-e-equivariance}). 
 
 \begin{theorem}[Prior-independent convergence]
@@ -211,22 +227,29 @@ Together, \cref{thm:equivariance-of-vi,thm:prior-independent-convergence,thm:com
 \end{equation}
 By \cref{lmm:geometric-mean-invariance-and-membership} in \cref{app:geometric-averaging-stays-in-Q}, $\tilde{q}$ remains in $\mathcal{Q}$ with natural parameter $\tilde{\eta} = \frac{1}{|G|} \sum_{g \in G} \eta_{g}$. This operation is applied during training, and optimization continues from $\tilde{q}$. Applying geometric averaging at prediction time is not beneficial: the symmetrized posterior $\tilde{q}$ collapses variation that the network uses to represent the data, and it leads to severely degraded predictive performance.
 
-The timing of the averaging matters. Applying it immediately after initialization produces a $G$-invariant starting point, yielding stronger equivariance throughout training but at a modest cost to accuracy, as the symmetry constraint reduces the effective hypothesis space from the beginning. Applying it after several epochs of unconstrained training gives a better balance: the network first develops useful representations, after which symmetrization refines the posterior towards the equivariant orbit without discarding learned structure. Applying it too late, however, imposes a large perturbation on a nearly converged posterior, effectively restarting optimization and requiring substantially more training to recover. We study this timing trade-off empirically in \cref{app:best-trigger-timing}.
+The timing of the averaging matters. Applying it immediately after initialization produces a $G$-invariant starting point, yielding stronger equivariance throughout training but at a modest cost to accuracy, as the symmetry constraint reduces the effective hypothesis space from the beginning. Applying it after several epochs of unconstrained training gives a better balance: the network first develops useful representations, after which symmetrization refines the posterior towards the equivariant orbit without discarding learned structure. Applying it later in training has only modest effect: the operation symmetrizes the distribution but preserves family membership (\cref{lmm:geometric-mean-invariance-and-membership}), so post-intervention optimization is unconstrained and the trajectory recovers quickly.
 
 \paragraph{Projection onto equivariant subspace.} Alternatively, we can project the posterior parameters directly onto the $G$-equivariant structure. For a variational family $\mathcal{Q}$ closed under $G$, the equivariant subspace of natural parameters is $H_{G} := \{\eta \in H \mid \phi_{g}(\eta) = \eta,\,\forall g \in G\}$. Given an arbitrary $\eta \in H$, the projected parameters onto $H_{G}$ are obtained by averaging over the orbit in natural parameter space:
 \begin{equation}
     \eta_{\mathrm{proj}} = \frac{1}{|G|} \sum_{g \in G} \phi_{g}(\eta).
 \end{equation}
-This is the orthogonal projection under the Euclidean inner product on $H_{G}$. As with geometric averaging, projection can be applied at any epoch and training continues afterwards, with the same timing considerations.
+This is the orthogonal projection under the Euclidean inner product on $H_{G}$.
 
-\paragraph{Expansion along orbit.} This mechanism arrives at the same equivariant posterior structure from the opposite direction. A base network with $1/|G|$ of the target channel width is trained in Stage 1, yielding a posterior $q_{\eta_{\mathrm{small}}}$. At the start of Stage 2, the network is expanded to full size by generating $|G|$ transformed copies of the base parameters under the group actions:
-\begin{align}
-    \eta_{\mathrm{full}} &= \{\eta_{[i, j]}\}_{i,j}, \, i, j \in \{0, 1, \cdots, |G|-1\}  \\
-    \eta_{[i, j]} &= \phi_{g_{j}g_{i}^{-1}}(\eta_{\mathrm{small}})
-\end{align}
-and concatenating these along the channel dimension. For the lifting layer, this reduces to $\eta_{[i]} = \phi_{g_{i}}(\eta_{\mathrm{small}})$. The resulting posterior $q_{\eta_{\mathrm{full}}}$ has a $G$-equivariant structure, structurally identical to what projection produces. Training continues from $q_{\eta_{\mathrm{full}}}$ without any symmetry constraints, allowing the posterior to deviate from the equivariant structure as optimization proceeds.
+Projection can be applied at any epoch and training continues afterwards, but the timing trade-off is quite different from geometric averaging: projection discards the orbit-orthogonal component of $\eta$, so applying it after the network has accumulated learned structure outside $H_{G}$ comes at a substantial cost (\cref{app:best-trigger-timing}).
 
-\paragraph{Comparison.}
+\paragraph{Expansion along orbit.} This mechanism arrives at the same equivariant posterior structure from the opposite direction. A base network with $1/|G|$ of the target channel width is trained in Stage 1, yielding a posterior $q_{\eta_{\mathrm{small}}}$. At the start of Stage 2, the network is expanded to full size by arranging $|G|$ group-transformed copies of the base parameters\footnote{Under the representation $\rho$ acting on the weight space. For instance, $\rho$ as the $C_{4}$ rotation representation on convolutional kernels in our experiments; the construction applies to any compact group $G$ with a representation on the weight space, including continuous groups via the discretizations discussed in \cref{app:continuous-compact-groups}.} into a block-circulant arrangement across the channel dimension: each block at position $(i,j)$ carries the copy indexed by the group element $g_{j}g_{i}^{-1}$ that connects the corresponding input and output channel groups. The resulting posterior $q_{\eta_{\mathrm{full}}}$ has a $G$-equivariant block structure at the parameter level.
+
+This construction differs from the $G$-equivariant CNN parameterization of \citet{cohenGroupEquivariantConvolutional2016}. A standard G-CNN keeps $|G|$ independent base posteriors $\{\eta\}_{k=0}^{|G|-1}$ along the input group axis and applies $\phi_{g_{i}}$ to obtain the block at position $(i,j)$; in our setting we only have a single base posterior $q_{\eta_{\mathrm{small}}}$ from Stage 1, so we instead assign blocks by the relative group element $g_{j}g_{i}^{-1}$ acting on this single base. The two construction layers, where our block-circulant arrangement yields $|G|$ distinct rows per block while a G-CNN with our single-base weight-tying collapses to a single distinct row. We find empirically that the block circulant variant outperforms tow alternatives that keep the same single-base weight-tying but assign blocks differently (\cref{app:expansion-along-orbit-filter-arrangement-ablation}). Training continues from $q_{\eta_{\mathrm{full}}}$ without any symmetry constraints, allowing the posterior to deviate from the equivariant structure as optimization proceeds.
+
+% \begin{align}
+%     \eta_{\mathrm{full}} &= \{\eta_{[i, j]}\}_{i,j}, \, i, j \in \{0, 1, \cdots, |G|-1\}  \\
+%     \eta_{[i, j]} &= \phi_{g_{j}g_{i}^{-1}}(\eta_{\mathrm{small}})
+% \end{align}
+% and concatenating these along the channel dimension. For the lifting layer, this reduces to $\eta_{[i]} = \phi_{g_{i}}(\eta_{\mathrm{small}})$. The resulting posterior $q_{\eta_{\mathrm{full}}}$ has a $G$-equivariant structure, structurally identical to what projection produces. Training continues from $q_{\eta_{\mathrm{full}}}$ without any symmetry constraints, allowing the posterior to deviate from the equivariant structure as optimization proceeds.
+
+\paragraph{Comparison.} All three mechanisms produce a posterior with $G$-equivariant structure but differ in how they reach it and in what they preserve from prior training. Geometric averaging is a distributional symmetrization: it returns a member of $\mathcal{Q}$ whose natural parameter lies in $H_{G}$, preserving the form of the variational family while collapsing variation across the orbit. Projection maps $\eta$ directly to $H_{G}$ via orthogonal projection of the natural parameters. Expansion along orbit is a structural symmetrization: instead of symmetrizing a wider posterior, it constructs the equivariant posterior from a smaller base network by tiling its posterior into the block-circulant arrangement. The first two operate on an unconstrained posterior by averaging its orbit; the third never leaves $H_{G}$ at the structural level.
+
+After the intervention, all three methods continue training without symmetry constraints, allowing the posterior to deviate from $H_{G}$ if doing so improves the augmented loss - the resulting equivariance is empirical, not architectural The three mechanisms have qualitatively different timing trade-offs, which we study empirically in \cref{app:best-trigger-timing}: geometric averaging is largely timing-insensitive, projection is most effective at the start of training, and expansion benefits from later triggers that allow the base network to accumulate useful structure before being expanded.
 
 \section{Experiments}
 
@@ -240,7 +263,7 @@ and concatenating these along the channel dimension. For the lifting layer, this
 
 We verify the predictions of \cref{thm:convergence-to-equivariant-solutions} using the a Bayesian neural network with two convolutional layers and one linear layer, trained with full $C_{4}$ augmentation and no posterior symmetrization. We vary the dataset size $N_{0} \in \{500,\,5000,\,20000,\,50000\}$ and compare an invariant isotropic Gaussian prior $p_{0} = \mathcal{N}(0,I)$ against a non-invariant prior with means drawn from a normal distribution. Results are averaged over 5 seeds.
 
-\cref{fig:theorem2} comfirms both predictions. First, the equivariance defect $\widehat{{\Delta}}^{\mathrm{eq}}_{F}$ decreases monotonically with $N_{0}$ under both priors (\cref{fig:theorem2} (a)), from $0.057 \pm 0.007$ to $0.033 \pm 0.001$ (invariant) and $0.088 \pm 0.003$ to $0.035 \pm 0.001$ (random). Second, the gap between the two priors shirinks from $0.031$ at $N_{0} = 500$ to $0.002$ at $N_{0} = 50\,000$ (\cref{fig:theorem2} (b)), consistent with the $\mathcal{O}(\beta)$ bound in \cref{thm:convergence-to-equivariant-solutions} where $\beta = 1/N$ vanishes as the dataset grows.
+\cref{fig:theorem2} confirms both predictions. First, the equivariance defect $\widehat{{\Delta}}^{\mathrm{eq}}_{F}$ decreases monotonically with $N_{0}$ under both priors (\cref{fig:theorem2} (a)), from $0.057 \pm 0.007$ to $0.033 \pm 0.001$ (invariant) and $0.088 \pm 0.003$ to $0.035 \pm 0.001$ (random). Second, the gap between the two priors shirinks from $0.031$ at $N_{0} = 500$ to $0.002$ at $N_{0} = 50\,000$ (\cref{fig:theorem2} (b)), consistent with the $\mathcal{O}(\beta)$ bound in \cref{thm:convergence-to-equivariant-solutions} where $\beta = 1/N$ vanishes as the dataset grows.
 
 \begin{figure}
     \centering
@@ -258,17 +281,17 @@ We compare the three symmetrization mechanisms from \cref{sec:symmetrization-of-
 
 \paragraph{Setup.} We train a fully convolutional Bayesian neural network with two convolutional layers with 32 and 64 channels, followed by a classification layer using a diagonal Gaussian variational family and a standard isotropic Gaussian prior. The training set consists of 5\,000 randomly chosen FashionMNIST images, each augmented with the full $C_{4}$ orbit (producing 20\,000 training samples). All methods share the same architecture, prior, and training setting (optimizer, learning rate, number of epochs, number of MC samples), they differ only in when and how the posterior is symmetrized.
 
-\paragraph{Methods.} We compare the following: Each symmetrization mechanism is applied at epoch $n \in \{0, 15, 30\}$ to study the effect of timing (\cref{sec:symmetrization-of-the-variational-posterior}). The baseline uses data augmentation with no symmetrization. After the intervention, all methods continue training until epoch 500.
+\paragraph{Methods.} We compare the following: Each symmetrization mechanism is applied at epoch $n \in \{0, 50, 100\}$ to study the effect of timing (\cref{sec:symmetrization-of-the-variational-posterior}). The baseline uses data augmentation with no symmetrization. After the intervention, all methods continue training until epoch 500.
 
 \paragraph{Metrics.} We report: (1) classification accuracy (\%), (2) orbit same prediction (OSP): the fraction of predictions that agree with the mode on the orbit, averaged over the test set, and (3) symmetric KL divergence between predictive distributions on original and rotated inputs.
 
 \paragraph{Results.} There are three findings from \cref{tab:symmetrization-comparison}.
 
-\paragraph{Orbit expansion achieves the best equivariance-accuracy trade-off.} Orbit expansion at epoch~30 achieves the optimal equivariance (OSP 0.946, Symm.~KL 0.0110) while maintaining accuracy within 0.4\% of the baseline (78.2\% vs 78.6\%). Among the three variants, epoch~30 performs best, suggesting that a short period of eqivariant pretraining provides sufficient structure for the expanded network to inherit, while leaving adequate training budget for the full-width network to adapt.
+\paragraph{Orbit expansion achieves the best equivariance-accuracy trade-off.} Orbit expansion at epoch 100 achieves the best equivariance of any method-trigger combination in \cref{tab:symmetrization-comparison} (OSP 0.952, Symm. KL 0.0085) while remaining within 0.3\% of the baseline accuracy (78.3\% vs 78.6\%). Among the three triggers, epoch 100 performs best on all three metrics, suggesting that a substantial period of equivariant pre-training establishes strong structure for the expanded network to inherit, with 400 remaining epochs sufficient for the full-width network to adapt.
 
-\paragraph{Geometric averaging yields strong equivariance at a modest accuracy cost.} Geometric averaging at epoch~0 achieves the joint-best equivariance (OSP 0.946, Symm.~KL 0.0109), reducing the symmetry gap by more than 60\% relative to the baseline, but accuracy drops by 1.3\%. Later timing partially recovers accuracy (77.6\% at epoch~30) while retaining most of the equivariance improvement, consistent with the trade-off discussed in \cref{sec:symmetrization-of-the-variational-posterior}.
+\paragraph{Geometric averaging yields strong equivariance at a modest accuracy cost.} Geometric averaging at epoch 0 achieves strong equivariance (OSP 0.946, Symm. KL 0.0109), reducing the symmetry gap by more than 60\% relative to the baseline, at an accuracy cost of 1.3\%. Later timing partially recovers accuracy (77.8\% at epoch 50) while retaining the equivariance improvement (OSP 0.945, Symm. KL 0.0121), consistent with the trade-off discussed in \cref{sec:symmetrization-of-the-variational-posterior}.
 
-\paragraph{Projection degrades both accuracy and equivariance when applied late.} Projection at epoch~0 performs comparably to the baseline (78.4\% accuracy, slight OSP improvement), but later projection (epoch 15 or 30) severely degrades both metrics. This suggests that projecting a partially trained posterior onto the equivariant subspace discards learned structure that cannot be recovered by subsequent training, unlike geometric averaging which symmetrizes the distribution without restricting the parameterization.
+\paragraph{Projection degrades both accuracy and equivariance when applied late.} Projection at epoch 0 performs comparably to the baseline (78.4\% accuracy, slight OSP improvement), but later projection (epoch 50 or 100) degrades accuracy substantially (3-4\% below the baseline) without improving equivariance over the baseline level. This suggests that projecting a partially trained posterior onto the equivariant subspace discards learned structure that cannot be recovered by subsequent training, unlike geometric averaging which symmetrizes the distribution without restricting the parameterization.
 
 \begin{table}[t]
     \centering
@@ -287,25 +310,25 @@ We compare the three symmetrization mechanisms from \cref{sec:symmetrization-of-
       & $0.0254{\scriptstyle\pm.0028}$ \\
     \midrule
     \multirow{3}{*}{Geometric avg.}
-      & 0  & $77.2{\scriptstyle\pm0.7}$ & $\mathbf{0.946}{\scriptstyle\pm.003}$ & $\mathbf{0.0109}{\scriptstyle\pm.0004}$ \\
-      & 15 & $77.5{\scriptstyle\pm1.0}$ & $0.942{\scriptstyle\pm.008}$ & $0.0127{\scriptstyle\pm.0027}$ \\
-      & 30 & $77.6{\scriptstyle\pm0.4}$ & $0.942{\scriptstyle\pm.007}$ & $0.0134{\scriptstyle\pm.0022}$ \\
+      & 0  & $77.3{\scriptstyle\pm0.7}$ & $0.946{\scriptstyle\pm.003}$ & $0.0109{\scriptstyle\pm.0004}$ \\
+      & 50 & $77.8{\scriptstyle\pm0.8}$ & $0.945{\scriptstyle\pm.005}$ & $0.0121{\scriptstyle\pm.0028}$ \\
+      & 100 & $77.4{\scriptstyle\pm0.6}$ & $0.940{\scriptstyle\pm.007}$ & $0.0138{\scriptstyle\pm.0022}$ \\
     \midrule
     \multirow{3}{*}{Projection}
       & 0  & $78.4{\scriptstyle\pm0.6}$ & $0.925{\scriptstyle\pm.006}$ & $0.0215{\scriptstyle\pm.0026}$ \\
-      & 15 & $76.0{\scriptstyle\pm0.7}$ & $0.908{\scriptstyle\pm.008}$ & $0.0289{\scriptstyle\pm.0039}$ \\
-      & 30 & $74.7{\scriptstyle\pm1.0}$ & $0.900{\scriptstyle\pm.005}$ & $0.0316{\scriptstyle\pm.0048}$ \\
+      & 50 & $74.6{\scriptstyle\pm1.0}$ & $0.907{\scriptstyle\pm.005}$ & $0.0272{\scriptstyle\pm.0012}$ \\
+      & 100 & $75.3{\scriptstyle\pm1.0}$ & $0.917{\scriptstyle\pm.004}$ & $0.0212{\scriptstyle\pm.0016}$ \\
     \midrule
     \multirow{3}{*}{Orbit expansion}
-      & 0 & $77.9{\scriptstyle\pm0.5}$ & $0.938{\scriptstyle\pm.008}$ & $0.0142{\scriptstyle\pm.0039}$ \\
-      & 15 & $78.0{\scriptstyle\pm0.6}$ & $0.940{\scriptstyle\pm.007}$ & $0.0138{\scriptstyle\pm.0026}$ \\
-      & 30 & $78.1{\scriptstyle\pm0.7}$ & $0.943{\scriptstyle\pm.007}$ & $0.0123{\scriptstyle\pm.0002}$ \\
+      & 0 & $77.7{\scriptstyle\pm0.7}$ & $0.933{\scriptstyle\pm.007}$ & $0.0167{\scriptstyle\pm.0029}$ \\
+      & 50 & $77.8{\scriptstyle\pm0.5}$ & $0.942{\scriptstyle\pm.004}$ & $0.0126{\scriptstyle\pm.0019}$ \\
+      & \cellcolor{gray!15}100 & \cellcolor{gray!15}$78.3{\scriptstyle\pm0.7}$ & \cellcolor{gray!15}$\mathbf{0.952}{\scriptstyle\pm.005}$ & \cellcolor{gray!15}$\mathbf{0.0085}{\scriptstyle\pm.0012}$ \\
     \bottomrule
     \end{tabular}
-    \caption{Effect of symmetrization mechanism and timing on FashionMNIST 
+    \caption{Effect of symmetrization mechanism and timing on FashionMNIST
     ($N_0 = 5\,000$, $C_4$ augmentation, 10\,000 test samples).
     Results are mean $\pm$ std over 5 seeds.
-    \textbf{Bold}: best in each column. 
+    \textbf{Bold}: best in each column.
     \colorbox{gray!15}{Shaded}: best equivariance--accuracy trade-off.}
     \label{tab:symmetrization-comparison}
 \end{table}
@@ -314,8 +337,12 @@ We compare the three symmetrization mechanisms from \cref{sec:symmetrization-of-
 \bibliographystyle{iclr2026_conference}
 
 \appendix
-\section{Continuous groups}
-\label[app]{app:continuous-groups}
+\section{Continuous compact groups}
+\label[app]{app:continuous-compact-groups}
+
+The body restricts to finite $G$ for notational concreteness. Every result of \cref{sec:theory} extends to compact topological groups under standard regularity assumptions as below. The sums over $G$ are replaced by Bochner integrals against the normalized Haar measure $\nu_{G}$, and the modifications are essentially notational.
+
+Let $G$ be a Hausdorff compact topological group with (left-invariant) normalised Haar measure $\nu_{G}$, and let the representations $\rho_{\mathcal{X}}$, $\rho_{\mathcal{Y}}$, $\rho$ be jointly continuous. By the Peter-Weyl theorem, every continuous finite-dimensional real representation of $G$ is similar to an orthogonal one, so we may take $\rho(g) \in O(d)$ in an appropriate basis; this furnishes the volume-preserving condition $|\det D \rho(g)^{-1}(\theta)| = 1$ used throughout \cref{sec:theory}. In the applications we target, the natural basis of $\Theta$ already is one in which $\rho$ acts orthogonally.
 
 \section{Proof of \cref{thm:closure-under-push-forward}}
 \label[app]{app:proof-of-thm-closure-under-push-forward}
@@ -422,6 +449,34 @@ We compare the three symmetrization mechanisms from \cref{sec:symmetrization-of-
         &= A(\eta) - d_{g}^{T} \eta_{g} - c_{g}
     \end{align}
 \end{proof}
+
+Next, we show that the transformations of the natural parameters form a group representation.
+
+\begin{proposition}
+    The set of transformations $\{\phi_{g} : H \to H \mid g \in G\}$ forms a group representation of $G$ on $H$.
+\end{proposition}
+
+\begin{proof}
+    The identity element $e \in G$ satisfies $\rho(e) = \text{id}$. Thus, for any $\eta \in H$ and $\theta \in \Theta$,
+    \begin{equation}
+        \mathcal{T}_{e} \# q_{\eta}(\theta) = q_{\eta}(\rho(e)^{-1}(\theta)) \left|\det D(\rho(e)^{-1})(\theta)\right| = q_{\eta}(\theta).
+    \end{equation}
+    This implies that $\phi_{e}(\eta) = \eta$ for all $\eta \in H$, i.e., $\phi_{e} = \text{id}$.
+
+    For any $\eta \in H$ and $g_{1}, g_{2} \in G$, we have:
+    \begin{align}
+        \mathcal{T}_{g_{1} g_{2}} \# q_{\eta}(\theta) &= q_{\eta}(\rho(g_{2}^{-1} g_{1}^{-1}(\theta))) \left|\det D(\rho(g_{2}^{-1} g_{1}^{-1}))(\theta)\right| \\
+        &= q_{\phi_{g_{2}}(\eta)}(\rho(g_{1}^{-1}(\theta))) \left|\det D(\rho(g_{1}^{-1}))(\theta)\right| \\
+        &= q_{\phi_{g_{1}}(\phi_{g_{2}}(\eta))}(\theta)
+    \end{align}
+    Thus, we have $\phi_{g_{1} g_{2}}(\eta) = \phi_{g_{1}}(\phi_{g_{2}}(\eta))$. Since $\eta$ is arbitrary, we conclude that $\phi_{g_{1} g_{2}} = \phi_{g_{1}} \circ \phi_{g_{2}}$.
+\end{proof}
+
+\begin{Note}
+    From the proof of the theorem, we can see that $M_{g}$ is invertible for all $g \in G$. Thus, the group representation $\phi_{g}$ is linear affine.
+    
+    Denote $\pi(g)(\eta) = M_{g}^{T} \eta$. Then, $\pi: G \to GL(k, \mathbb{R})$ is a linear representation of $G$ on $\mathbb{R}^{k}$. The transformation $\phi_{g}$ can be viewed as an affine transformation composed of the linear transformation $\pi(g)$ and a translation by $b_{g}$.
+\end{Note}
 
 \section{Proof of \cref{thm:equivariance-of-vi}}
 \label[app]{app:proof-of-thm-equivariance-of-vi}
@@ -646,7 +701,57 @@ Squaring the second and third inequalities and solving for $N_0$ and $T$ yields 
 \section{Best trigger timing}
 \label[app]{app:best-trigger-timing}
 
+We empirically study the trigger-timing trade-off discussed in \cref{sec:symmetrization-of-the-variational-posterior}. The setup is identical to \cref{sec:symmetrization-on-image-classification} (FashionMNIST $N_{0} = 5000$, $C_{4}$ augmentation, 5 seeds; the orbit-expansion variant is the block-circulant filter arrangement of \cref{app:expansion-along-orbit-filter-arrangement-ablation}), extended to the trigger epoch set $\{0, 15, 30, 50, 100, 150\}$. After the trigger, all methods continue training without symmetry constraints up to epoch 500. \cref{fig:trigger-timing} reports the seed-averaged final-epoch metrics; the stars mark the recommended trigger for each method according to this sweep.
 
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{plots/trigger_timing_comparison.png}
+    \caption{Effect of trigger timing on the three symmetrization mechanisms (FashionMNIST, $N_{0} = 5\,000$, $C_{4}$, 5 seeds). Rows: methods; columns: metrics; arrows indicate the desired direction. Stars mark the recommended trigger per method based on this extended sweep.}
+    \label{fig:trigger-timing}
+\end{figure}
+
+\paragraph{Geometric averaging.} The three metrics are nearly flat over the trigger epochs: accuracy varies by $\le 0.5\%$, OSP by $\le 0.007$, and symmetric KL divergence by $\le 0.003$. Equivariance (OSP and Symm.\ KL) is jointly best at epoch 0 ($0.946$, $0.0109$), with accuracy maximized at epoch 50 ($77.8\%$, gain of $+0.5\%$ over epoch 0) at a small equivariance cost. The flatness is consistent with geometric mean being a distributional symmetrization that preserves the family membership (\cref{lmm:geometric-mean-invariance-and-membership}): after the trigger, optimization in the equivariant subspace $H_{G}$ proceeds without restriction, so the precise moment of intervention matters little. We use epoch 0 in the main table to maximize equivariance and epoch 50 to maximize accuracy.
+
+\paragraph{Projection.} Projection is the only one of the three mechanisms whose trigger time is critical: only the epoch-0 trigger matches or exceeds the later-trigger plateaus of the other two mechanisms, and every later projection trigger degrades both accuracy and equivariance (\cref{fig:trigger-timing}). The explanation lies in the dual role of $H_{G}$ as the equivariant subspace of the variational parameter space: it is invariant under the augmented optimization flow, but it is also astrict subset of the full parameter space, with fewer effective degrees of freedom.
+
+At trigger 0, projection initializes $\eta_{0} \in H_{G}$ before training has accumulated any structure outside it. Because the augmented ELBO and its gradient commute with the $G$-action (\cref{thm:equivariance-of-vi}), $H_{G}$ is invariant under the optimization flow, and the trained $\eta$ remains close to $H_{G}$ throughout the run. The trade-off between accuracy and equivariance plays out within $H_{G}$, and the resulting accuracy and equivariance are jointly the highest of any projection trigger.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{plots/projection_trajectories_train_val.png}
+    \caption{Train and validation accuracy under projection triggered at epoch 15 (top, blue) and epoch 150 (bottom, red).
+    Mean over 5 seeds.
+    Vertical dotted lines mark the projection events.
+    Projection drops accuracy to the random-class baseline ($\approx 10\%$) at both triggers;
+    the train-val gap remains within $3\%$ throughout,
+    indicating that projection does not preferentially discard overfitting features.
+    Subsequent training reconstructs accuracy from scratch and reaches the no-projection plateau in both cases.}
+    \label{fig:projection-accuracy}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{plots/projection_trajectories.png}
+    \caption{Within-run trajectories of OSP (top) and symmetric KL divergence (bottom, log scale)
+    under projection triggered at epoch 15 (blue) and epoch 150 (red).
+    Vertical dotted lines mark the projection events.
+    At trigger 15 both metrics record the projected-in-$H_{G}$ state simultaneously (OSP $= 0.995$, Symm.\ KL $= 2.2 \times 10^{-4}$).
+    At trigger 150, the two metrics dissociate: Symm.\ KL records a real reduction from the pre-projection value,
+    dropping to $5.9 \times 10^{-3}$ by epoch 155, while OSP drops to $0.708$ at the projection log.
+    The dissociation reflects OSP's $\arg\max$-based definition,
+    which is biased by the 150 epochs of training preceding the projection.}
+    \label{fig:projection-trajectories}
+\end{figure}
+
+At mid-training triggers (epochs 15--100), the variational mean has accumulated an orbit-orthogonal component that projection now discards. Both equivariance metrics record a sharp transient improvement at the projection step - at trigger 15, OSP rises to $0.995$ and Symm.\ KL drops to $2.2 \times 10^{-4}$, a $40\times$ reduction from the pre-projection value (\cref{fig:projection-trajectories}). But $H_{G}$ has fewer effective parameters than the full variational family, and the post-projection unconstrained training escapes it quickly: within a few epochs the variational mean drifts back out, and both metrics relax to plateaus noticeably worse than the trigger-0 plateau in \cref{fig:trigger-timing}. The transient equivariance gain is paid back by the cost of relearning the discarded features under now-unconstrained training.
+
+At trigger 150, the same dynamics produce a qualitatively different equivariance signature. Symm.\ KL still records a real gain: it drops from $0.016$ at epoch 145 to $0.013$ at the projection log and to $5.9 \times 10^{-3}$ five epochs later, before relaxing to the long-run plateau. OSP, however, drops sharply from $0.929$ to $0.708$ at the same projection log. We attribute the dissociation to OSP's reliance on $\arg\max$ matching across the orbit: even when projection has moved $\eta$ into $H_{G}$, the resulting model carries bias from the 150 epochs of training preceding the projection, and this bias shifts $\arg\max$ outputs in ways that the integrated Symm.\ KL does not capture. The equivariance gain brought by projection at this stage is real - visible in Symm.\ KL - but is masked under an $\arg\max$-based metric.
+
+The practical takeaway: projection's only viable trigger is epoch 0, where no orbit-orthogonal structure has yet accumulated to be discarded. Geometric averaging and orbit expansion do not share this restriction because their effect at any trigger is compatible with the structure the model has already learned.
+
+\paragraph{Expansion along orbit.} Compare to other two methods, expansion along orbit improves with longer base-network pre-training. Accuracy peaks at epoch 100 (78.3\%), and equivariance reaches the optimum at the same point (OSP 0.952, Symm. KL 0.0085, both best across all methods and trigger timings). The pattern is consistent with our interpretation in \cref{sec:symmetrization-of-the-variational-posterior}: expansion does not modify existing posterior, it constructs a larger network from a smaller one whose representations are then better, the longer the small network has trained - as long as the remaining training budget is sufficient for the expanded network to adapt. The further dip at epoch 150 (77.7\% accuracy, 0.0091  Symm.\ KL) suggests that beyond this point the remaining $\sim 70\%$ of training is no longer sufficient for full adaptation.
+
+\paragraph{Summary.} The trigger-timing trade-off is method dependent. For methods that modify current posterior (geometric averaging, projection), the optimum is at or near to epoch 0 because the modification displaces learned structure that cannot be cheaply recovered. For methods that construct a new posterior from a smaller one (expansion), the optimum is in the middle of training, where the base network has converged to useful features but the full network still has sufficient training budget to specialize.
 
 \section{Expansion along orbit: filter arrangement ablation}
 \label[app]{app:expansion-along-orbit-filter-arrangement-ablation}
@@ -717,6 +822,6 @@ column.}
 \label{tab:orbit-expansion-ablation}
 \end{table}
 
-The block-circulant variant $\eta_{[i,j]} = \varphi_{g_j g_i^{-1}}(\eta_{\mathrm{small}})$ consistently achieves the best equivariance metrics across all trigger timings, with the advantage most pronounced at epoch~30 (OSP 0.945 vs 0.938, Sym.~KL 0.011 vs 0.014 compared to G-CNN weight-tied). AA clear pattern emerges: more distinct rows in the filter bank leads to better equivariance. The G-CNN weight-tied structure (1 distinct row) performs worst, the double-shift variant (2 distinct rows) is intermediate, and the block-circulant variant ($|G|$ distinct rows) performs best. We hypothesize that greater row-wise diversity provides a more informative initialization for the subsequent unconstrained training, even though only the G-CNN weight-tied structure preserves exact $G$-equivariance. All three variants show improving equivariance with later trigger epochs, confirming that longer base-network pretraining benefits the expanded model regardless of filter arrangement. We use the block-circulant variant throughout the main experiments.
+The block-circulant variant $\eta_{[i,j]} = \varphi_{g_j g_i^{-1}}(\eta_{\mathrm{small}})$ consistently achieves the best equivariance metrics across all trigger timings, with the advantage most pronounced at epoch 30 (OSP 0.945 vs 0.938, Sym. KL 0.011 vs 0.014 compared to G-CNN weight-tied). A clear pattern emerges: more distinct rows in the filter bank leads to better equivariance. The G-CNN weight-tied structure (1 distinct row) performs worst, the double-shift variant (2 distinct rows) is intermediate, and the block-circulant variant ($|G|$ distinct rows) performs best. We hypothesize that greater row-wise diversity provides a more informative initialization for the subsequent unconstrained training, even though only the G-CNN weight-tied structure preserves exact $G$-equivariance. All three variants show improving equivariance with later trigger epochs, confirming that longer base-network pretraining benefits the expanded model regardless of filter arrangement. We use the block-circulant variant throughout the main experiments.
 
 \end{document}
