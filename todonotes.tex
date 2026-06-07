@@ -1,0 +1,60 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Settings for personal and general TODO notes %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage[
+    textwidth=3.3cm, 
+    % disable,
+    ]{todonotes}
+
+\setlength{\marginparwidth}{2.5cm}  % Necessary to make the todonotes fit into the margins
+
+\newcounter{todocounter}
+
+\colorlet{jgcolor}{green!40!white}
+\newcommand{\jgnote}[1]{\refstepcounter{todocounter}\todo[color=jgcolor,linecolor=black,size=\scriptsize,caption={\textbf{\thetodocounter. JG} #1}]{\textbf{\thetodocounter. JG:}\\#1}{}}
+\newcommand{\jginline}[2][]{
+  \ifthenelse { \equal {#1} {} }
+    { \def\temp {#2} }  % if #1 == blank
+    { \def\temp {#1} }   % else (not blank)
+  \refstepcounter{todocounter}\todo[color=jgcolor,inline,caption={\textbf{\thetodocounter. JG} \temp}]{\textbf{\thetodocounter. JG:} #2}{}}
+\newcommand{\jgblock}[2][{}]{
+  \ifthenelse { \equal {#1} {} }
+  { \def\templist {\emph{block comment}}
+    \def\tempheader {}}  % if #1 == blank
+  { \def\templist {#1}
+    \def\tempheader {#1}}   % else (not blank)
+  \refstepcounter{todocounter}\todo[color=jgcolor,inline,caption={\textbf{\thetodocounter. JG} \templist}]{\textbf{\thetodocounter. JG: \tempheader}\\\begin{minipage}{\textwidth}#2\end{minipage}}{}}
+\newcommand{\jgfigure}[1]{\refstepcounter{todocounter}\missingfigure[figcolor=jgcolor]{\textbf{\thetodocounter. JG:} #1}{}}
+
+
+\colorlet{mdcolor}{blue!20!white}
+\newcommand{\mdnote}[1]{\refstepcounter{todocounter}\todo[color=mdcolor,linecolor=black,size=\scriptsize,caption={\textbf{\thetodocounter. MD} #1}]{\textbf{\thetodocounter. MD:}\\#1}{}}
+\newcommand{\mdinline}[2][]{
+  \ifthenelse { \equal {#1} {} }
+    { \def\temp {#2} }  % if #1 == blank
+    { \def\temp {#1} }   % else (not blank)
+  \refstepcounter{todocounter}\todo[color=mdcolor,inline,caption={\textbf{\thetodocounter. MD} \temp}]{\textbf{\thetodocounter. MD:} #2}{}}
+\newcommand{\mdblock}[2][{}]{
+  \ifthenelse { \equal {#1} {} }
+  { \def\templist {\emph{block comment}}
+    \def\tempheader {}}  % if #1 == blank
+  { \def\templist {#1}
+    \def\tempheader {#1}}   % else (not blank)
+  \refstepcounter{todocounter}\todo[color=mdcolor,inline,caption={\textbf{\thetodocounter. MD} \templist}]{\textbf{\thetodocounter. MD: \tempheader}\\\begin{minipage}{\textwidth}#2\end{minipage}}{}}
+\newcommand{\mdfigure}[1]{\refstepcounter{todocounter}\missingfigure[figcolor=mdcolor]{\textbf{\thetodocounter. MD:} #1}{}}
+
+
+\colorlet{afcolor}{yellow!40!white}
+\newcommand{\afnote}[1]{\refstepcounter{todocounter}\todo[color=afcolor,linecolor=black,size=\scriptsize,caption={\textbf{\thetodocounter. AF} #1}]{\textbf{\thetodocounter. AF:}\\#1}{}}
+\newcommand{\afinline}[2][]{
+  \ifthenelse { \equal {#1} {} }
+    { \def\temp {#2} }  % if #1 == blank
+    { \def\temp {#1} }   % else (not blank)
+  \refstepcounter{todocounter}\todo[color=afcolor,inline,caption={\textbf{\thetodocounter. AF} \temp}]{\textbf{\thetodocounter. AF:} #2}{}}
+\newcommand{\afblock}[2][{}]{
+  \ifthenelse { \equal {#1} {} }
+  { \def\templist {\emph{block comment}}
+    \def\tempheader {}}  % if #1 == blank
+  { \def\templist {#1}
+    \def\tempheader {#1}}   % else (not blank)
+  \refstepcounter{todocounter}\todo[color=afcolor,inline,caption={\textbf{\thetodocounter. AF} \templist}]{\textbf{\thetodocounter. AF: \tempheader}\\\begin{minipage}{\textwidth}#2\end{minipage}}{}}
+\newcommand{\affigure}[1]{\refstepcounter{todocounter}\missingfigure[figcolor=afcolor]{\textbf{\thetodocounter. AF:} #1}{}}
