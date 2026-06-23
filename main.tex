@@ -387,7 +387,7 @@ Next, we address the fact that the true predictive maps $F_\eta$ in practice mus
 \begin{restatable}[Complexity for $G_{\varepsilon}$-equivariance]{theorem}{restatecomplexity}
 \label{thm:complexity-for-G-e-equivariance}
  Suppose $f(x;\theta)$ is uniformly bounded in $x \in \mathcal{X}$ and 
-    $q_{\eta}$-a.s.\ in $\theta$, for some $M > 0$\mdnote{adding $M$ here might be better}\jgnote{Okay, why? Also, if we keep $M$ in the statement, I prefer the old version, now it's not really clear that $M$ is the bound}, and that the $G$-action on $\mathcal{Y}$ 
+    $q_{\eta}$-a.s.\ in $\theta$, and that the $G$-action on $\mathcal{Y}$ 
     is orthogonal. Then there exist constants $C_{\mathrm{data}}$ and $C_{\mathrm{weight}}$ such that, for any fixed $\eta$, with probability at least $1-\delta$ over the $N_0$ i.i.d.\ inputs $x_i \sim P_\mathcal{X}$ and the $T$ i.i.d.\ posterior samples $\theta^{(t)} \sim q_\eta$, the Monte Carlo equivariance defect satisfies %the draw of the data and weight samples,
     \begin{equation}
         \widehat{\Delta}^{\mathrm{eq}}_{F}(\eta) \leq  \Delta^{\mathrm{eq}}_{F}(\eta)+ C_{\mathrm{data}}\sqrt{\frac{\log(2/\delta)}{N_{0}}} + C_{\mathrm{weight}}\sqrt{\frac{\log(2/\delta)}{T}}\,.
@@ -428,7 +428,7 @@ Next, we address the fact that the true predictive maps $F_\eta$ in practice mus
 
 % \afnote{Does it really? No, fix}\afnote{\cref{thm:equivariance-of-vi}  guarantees that if we initialize the network invariantly, the optimum will also be. There are many ways to initialize invariantly, though.}\mdnote{Maybe this is ok.}\cref{thm:equivariance-of-vi} guarantees that (i) the set of minimizers $H^{\ast}$ is closed under $\phi_{g}$, so it decomposes into $G$-orbits, and (ii) if the trajectory ever enters $H_{G}$ it stays there. Neither implies that an arbitrary training run converges to a point in $H_{G}$ - optimization may converge to a non-invariant point within the optimal orbit, and finite-step optimizers may drift slowly toward $H_{G}$ without reaching it. We propose two complementary mechanisms to enforce membership in $H_{G}$, each applicable either at initialization or at an intermediate point during training.
 
-According to \cref{thm:equivariance-of-vi}(iii), the space of parameters corresponding to equivariant variational distributions $H_{G}$ is preserved during training. Hence, if we ensure that the parameters lie in $H_{G}$ at some point during training, we will arrive at an equivariant variational posterior at the end of it. Therefore, we propose two complementary mechanisms that place $\eta$ into $H_{G}$, one by projecting an existing posterior, one by constructing the posterior from a smaller base, see Figure~\ref{fig:figureone}. \mdnote{try to shorten this}\jgnote{Sounds good! Found the space elsewhere.}
+According to \cref{thm:equivariance-of-vi}(iii), the space of parameters corresponding to equivariant variational distributions $H_{G}$ is preserved during training. Hence, if we ensure that the parameters lie in $H_{G}$ at some point during training, we will arrive at an equivariant variational posterior at the end of it. Therefore, we propose two complementary mechanisms that place $\eta$ into $H_{G}$, one by projecting an existing posterior, one by constructing the posterior from a smaller base, see Figure~\ref{fig:figureone}.
 
 % According to \cref{thm:equivariance-of-vi}(iii), it suffices to place $\eta$ in $H_{G}$ at any % single 
 % point during training.\jgnote{To achieve what? I think here, we should explain the basic idea we have in Figure 1 and refer to it.} We propose two mechanisms for this: one projects an existing posterior, the other builds it from a smaller base.
@@ -993,7 +993,7 @@ We now restate \cref{thm:complexity-for-G-e-equivariance} and prove it thereafte
 
 \fi
 
-Let us begin by noting that a simple application of Jensen's inequality shows that for each $x$,\jgnote{Explain what $M$ is}
+Suppose that there exists $M > 0$ such that $\|f(x;\theta)\| \le M$ for all $x \in \mathcal{X}$ and $q_{\eta}$-a.s.\ $\theta$. Let us begin by noting that a simple application of Jensen's inequality shows that for each $x$,
 \begin{align}
  \|F_{\eta}(x)\|& = \|\mathbb{E}_{q_{\eta}}[f(x;\theta)]\| \le \mathbb{E}_{q_{\eta}}[\|f(x;\theta)\|] \le M, \\
  \|\widehat{F}_{\eta}(x)\| &= \frac{1}{T}\left\|  \sum_{t=1}^T f(x;\theta^{(t)})\right\| \leq \frac{1}{T} \sum_{t=1}^T \left\|f(x; \theta^{(t)})\right\| \le M.
@@ -1034,13 +1034,13 @@ Hence, the quantities we need to estimate are essentially sums of i.i.d. bounded
     \begin{equation}
         \left|\|\widehat{F}_{\eta}(gx_{i}) - g \widehat{F}_{\eta}(x_{i})\|^{2} - \|\widehat{F}'_{\eta}(gx_{i}) - g \widehat{F}'_{\eta}(x_{i})\|^{2}\right| \le \frac{4M}{T} \cdot 4M = \frac{16 M^{2}}{T}.
     \end{equation}
-    Averaging over $i$ and $g$ preserves this bound, so $\widehat{\Delta}^{\mathrm{eq}}_{F}(\eta)$ has bounded differences $c_{s} \le 16 M^{2}/T$\jgnote{actually, this is not quite correct, the $c_s$ are the bounds, so this is an equality} for each $s = 1, \ldots, T$. 
+    Averaging over $i$ and $g$ preserves this bound, so $\widehat{\Delta}^{\mathrm{eq}}_{F}(\eta)$ satisfies the bounded-differences condition with constants $c_{s} = 16 M^{2}/T$ for each $s = 1, \ldots, T$. 
     
     McDiarmid's inequality \citep{McDiarmid_1989,doobREGULARITYPROPERTIESCERTAIN} states that any function $\Phi$ of independent random variables satisfies
     \begin{equation}
     \mathbb{P}\big(\mathbb{E}[\Phi] - \Phi \ge t\big) \le \exp\!\left(-\frac{2 t^{2}}{\sum_{s=1}^{T} c_{s}^{2}}\right),
     \end{equation}
-    where $c_{s}$ is the bounded-difference constant of $\Phi$ in its $s$-th argument, i.e. substituting the $s$-th argument of $\Phi$ with a different value changes $\Phi$ by at most $c_s$. The preceding paragraph established $c_{s} \leq  16 M^{2}/T$ for $\Phi = \widehat{\Delta}^{\mathrm{eq}}_{F}(\eta)$.\mdnote{could remove this line}\jgnote{no, let's keep it (as equality)}
+    where $c_{s}$ is the bounded-difference constant of $\Phi$ in its $s$-th argument, i.e. substituting the $s$-th argument of $\Phi$ with a different value changes $\Phi$ by at most $c_s$.
     
     Substituting $\Phi = \widehat{\Delta}^{\mathrm{eq}}_{F}(\eta)$ and $c_{s} = 16 M^{2}/T$, we have $\sum_{s=1}^{T} c_{s}^{2} = T \cdot (16 M^{2}/T)^{2} = 256 M^{4}/T$. Hence,
     \begin{equation}
