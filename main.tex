@@ -1,7 +1,6 @@
-\documentclass{article} % For LaTeX2e
+\documentclass{article}
 \usepackage{iclr2026_conference,times}
 
-% Optional math commands from https://github.com/goodfeli/dlbook_notation.
 \input{math_commands.tex}
 \input{todonotes}
 
@@ -49,7 +48,7 @@
 \usepackage{colortbl}
 \usepackage{graphicx}
 \graphicspath{{./plots/}}
-\usepackage{enumerate}
+\usepackage{enumitem}
 
 \usepackage{thmtools}
 \usepackage{thm-restate}
@@ -78,9 +77,9 @@ Symmetries are important for many deep learning tasks, ranging from applications
 
 
 \section{Introduction}
-In recent years, symmetric learning tasks have become an important field of study. After an initial focus on specialized equivariant networks which impose the symmetry constraints layer-by-layer \citep{bronstein2017geometric}, attention has recently shifted towards learning symmetries from augmented training data~\citep{chen2020group}. This approach has the advantage of, given an efficient symmetry transformation mechanism,  being straightforward to implement %as long as the symmetry transformation can be applied to training samples 
-and can be used together with highly-optimized and well-performing architectures~\citep{wang2024}. However, as the symmetry is merely learned and not imposed, it is only achieved approximately. %and not exactly. 
-Therefore, novel techniques are required which improve the symmetry gain derived from augmented training. %data.
+In recent years, symmetric learning tasks have become an important field of study. After an initial focus on specialized equivariant networks which impose the symmetry constraints layer-by-layer \citep{bronstein2017geometric}, attention has recently shifted towards learning symmetries from augmented training data~\citep{chen2020group}. This approach has the advantage of, given an efficient symmetry transformation mechanism,  being straightforward to implement
+and can be used together with highly-optimized and well-performing architectures~\citep{wang2024}. However, as the symmetry is merely learned and not imposed, it is only achieved approximately.
+Therefore, novel techniques are required which improve the symmetry gain derived from augmented training.
 
 \begin{figure}[b]
 \centering
@@ -89,58 +88,43 @@ Therefore, novel techniques are required which improve the symmetry gain derived
   \caption{Natural parameters $\eta$ for a variational distribution in the exponential family that lie in $H_G$ correspond to symmetric BNNs, here exemplified with a reflection symmetry. Our main Theorem~\ref{thm:equivariance-of-vi} implies that $H_G$ is invariant for augmented training. Through the symmetrization strategies described in Section \ref{sec:symmetrization-of-the-variational-posterior}, we can increase the equivariance of the final model.  }
   \label{fig:figureone}
 \end{figure}
-The explicit layer-wise %group-theoretic structure makes 
-equivariant neural networks are readily accessible to theoretical analysis, while data augmentation is considerably harder to study since it involves the training dynamics (see the related works section). %~\citep{nordenfors2025optimization}. 
+The explicit layer-wise
+equivariant neural networks are readily accessible to theoretical analysis, while data augmentation is considerably harder to study since it involves the training dynamics (see the related works section).
 It is however possible to show that in \emph{expectation over initializations}, data augmentation leads to exact equivariance \citep{gerken2024emergent,nordenfors2024}. A practical but costly method for approximating such expected values is training a deep ensemble.
-%Such 
 
 
-%\jgnote{Added $\eta$ to figure}Their explicit layer-wise group-theoretic structure makes equivariant neural networks readily accessible to theoretical analysis, while data augmentation is considerably harder to study since it involves the training dynamics (see the related works section) %~\citep{nordenfors2025optimization}. 
-%Recent progress in this direction was made when it could be shown that in expectation over initializations, data augmentation leads to exact equivariance \citep{gerken2024emergent,nordenfors2024}. This expectation value can be approximated in practice by training a deep ensemble.
 
-%Since 
-The purpose of this work is to investigate a cheaper way to realize such ``equivariance in expectation'': Training Bayesian neural networks (BNNs) with variational inference on augmented data. In this setting, sampling from the posterior predictive distribution replaces the inference step on the ensemble and yields Bayesian uncertainty estimates. In this setting, only one training run is necessary to obtain the variational posterior, in contrast to the one training run per ensemble member %required 
+The purpose of this work is to investigate a cheaper way to realize such ``equivariance in expectation'': Training Bayesian neural networks (BNNs) with variational inference on augmented data. In this setting, sampling from the posterior predictive distribution replaces the inference step on the ensemble and yields Bayesian uncertainty estimates. In this setting, only one training run is necessary to obtain the variational posterior, in contrast to the one training run per ensemble member
 for deep ensembles. Furthermore, since BNNs show stable out of distribution behavior, they are particularly well suited for small datasets, the regime in which data augmentation can be expected to have the largest effect. 
 
 
-%We consider in this work the effect of 
-
-%Data augmentation is a widely used technique in machine learning. It is commonly believed that training on data that has been symmetrized through augmentation (by applying group transformations) will encourage symmetry behavior in the output function\citep{chen2020group}. In other terms, that data augmentation will encourage equivariance.
-
-%This 'organic' approach to equivariance is in contrast to the philosophy of \emph{geometric deep learning} \citep{bronstein2017geometric}. Especially prominent is the \emph{layerwise equivariant construction}, in which the parameters of the network are constrained to regions which guarantee equivariance (i.e. GCNN:s and its variants \citep{cohenGroupEquivariantConvolutional2016}). While this approach guarantees perfect equivariance, it limits the functions the model can explore during training. There are conflicting evidence as to which effect is stronger -- while  \citet{wang2024} advocates that training an expressive network on augmented data is better, it was in \citet{brehmer2024a} argued that equivariant models scale better.
-
-% This begs the question: Under which conditions can it be guaranteed that augmented training leads to an equivariant trained model? This question has been treated in several settings, including both linear \cite{elesedy2021provably,chen2024implicit} and non-linear \cite{nordenfors2025optimization}neural networks, as well as ensembles of neural networks \citep{gerken2024emergent,nordenfors2024}. In this paper, we extend these results to \emph{Variational Inference with Bayesian neural networks}.
 
 
-%In Bayesian neural networks, one learns not a single parameter configuration, but rather a distribution of weights. This makes them suitable for e.g. uncertainty quantification. 
+
+
+
 
 Our main contributions are the following:
 \begin{itemize}
     \item We study BNNs trained on augmented data with a variational distribution from the exponential family. We show that, when the training starts from an invariant prior, the variational distribution stays invariant throughout training, under some mild assumptions. This generalizes a similar result from \citet{nordenfors2025optimization} for non-Bayesian network training.
-    \item We derive bounds for the deviation of the variational distribution from equivariance if the prior is not equivariant. We furthermore prove bounds for the equivariance error in the predictions due to finite sampling. These theoretical results are validated numerically. %experiments.    %We conduct numerical experiments to validate these theoretical results.
+    \item We derive bounds for the deviation of the variational distribution from equivariance if the prior is not equivariant. We furthermore prove bounds for the equivariance error in the predictions due to finite sampling. These theoretical results are validated numerically.
     \item We introduce three symmetrization methods (geometric averaging, projection and orbit expansion) that can be applied during training to improve the equivariance properties of the BNN. We test these techniques in extensive numerical experiments for image classification. \emph{Orbit expansion} outperforms the baseline in both model performance and equivariance.
     
-    % and show that orbit expansion outperforms the baseline in both model performance and equivariance.
 \end{itemize}
 
-%\paragraph{Contribution} The main contribution of this paper is theoretical. We show that when using an invariant prior and the underlying exponential family parametrizing the weight distribution is closed under symmetry transformations, the natural set of natural parameters yielding equivariant predictive maps turns invariant under gradient descent training. This generalizes a result from \citet{nordenfors2025optimization} stating that when training on augmented data, the natural set of parameters yielding equivariant networks becomes an invariant set of gradient descent training. In particular, we derive a non-trivial result about when an exponential family is closed under group transformations.  We also discuss the error of using a non-invariant prior, and the discretization errors from approximating the true predictive map with a Monte Carlo sample -- both vanish asympotically at the expected rates.
 
-%Based on the theoretical result, we propose to start the  augmented training in an invariant distribution to improve its equivariazing effect. We explore several strategies to realise such an initialization. All of our proposed methods leads to more equivariance compared to a baseline at no performance cost. One of our strategies even leads to a performance boost.
 
 
 
 \section{Related Work}
 
-% Equivariance
-\paragraph{Equivariant neural networks.} %geometrisk djupinlärning. Några viktiga referenser. Lite olika strategier
-The issue of symmetry, %or more specifically 
-i.e. \emph{invariance} and \emph{equivariance}, of deep neural nets has grown into an entire  subfield called \emph{geometric deep learning} \citep{bronstein2017geometric}. The most prominent construction of % technique %used to construct 
+\paragraph{Equivariant neural networks.}
+The issue of symmetry,
+i.e. \emph{invariance} and \emph{equivariance}, of deep neural nets has grown into an entire  subfield called \emph{geometric deep learning} \citep{bronstein2017geometric}. The most prominent construction of
 equivariant networks is the layerwise one. This strategy originates from GCNNs, Group Convolutional Neural Networks \citep{cohenGroupEquivariantConvolutional2016}, but has by now been generalized to virtually any symmetry induced by any group \citep{kondor2018generalization,keriven2019universal,gerken2023}. There are also other strategies, such as learning from invariants \citep{villar2021scalars}, frame averaging \citep{puny2022frame}, fundamental domain projection \citep{aslan2023group} and group averaging. There are also works in which symmetries are enforced approximately, for instance through so called weight annealing \citep{wang2022approximately}.
 
-% Augmentation and its effect on optimization
 
 \paragraph{Augmentation and training dynamics.}
-% Usual spiel: Soft-kopiera från andra papper
 The question of the effect of data augmentation on the training dynamics of neural networks have been treated in several simplified contexts, such as feature averaged models \citep{lyle2020benefits,elesedy2021provably} as well as linear neural networks \citep{lawrence2022implicit,chen2024implicit,montufar2025equivariant}. In these cases, it is often possible to prove equivalence of augmentation and equivariance. Fully non-linear networks were treated in \citet{nordenfors2025optimization,nordenfors2025}, whose results we generalize to Bayesian networks here.
 
 Empirical studies on the difference between augmentation and restrictions are plentiful. More systematic treatments are \citet{gandikotaTrainingArchitectureHow2021,gerken22a,brehmer2025}.
@@ -150,7 +134,7 @@ Bayesian approaches to deep learning have been studied for many years~\citep{mac
 However, making BNNs practically applicable requires integrating variational inference into the deep learning training methodology~\citep{gravesPracticalVariationalInference2011,blundell2015,kingma2022}.
 For a review of BNNs with a focus on practical applications, see~\citet{jospin2022}.
 
-Not many prior works consider symmetries in relation to BNNs. %In particular, 
+Not many prior works consider symmetries in relation to BNNs.
 \citet{pmlr-v180-ouderaa22a} propose a probabilistic group-averaging of BNNs in order to realize a soft symmetry constraint, optimized on the data. Closest to our work is~\citet{mourdoukoutas2021} which uses a specific prior that combines different weight-sharing schemes and therefore symmetry constraints. During training, the network learns which symmetry fits the data best. In contrast, we consider training on augmented data with a generic prior that does not impose weight-sharing.
 
 
@@ -158,11 +142,9 @@ Not many prior works consider symmetries in relation to BNNs. %In particular,
 \label{sec:theory}
 
 We develop a theoretical framework for understanding how data augmentation induces equivariance in variational Bayesian inference. 
-We proceed in three steps: first, we characterize when exponential families are closed under group actions (\cref{sec:closed-exponential-family-under-group-actions}); second, we show that data-augmented training %on augmented data 
+We proceed in three steps: first, we characterize when exponential families are closed under group actions (\cref{sec:closed-exponential-family-under-group-actions}); second, we show that data-augmented training
 makes the ELBO invariant, and how that affects the training (\cref{sec:data-augmentation-induces-equivariance});
-%which drives the training towards equivariant solutions(
-%driving the optimal variational posterior towards equivariant solutions ; 
-third, we propose %two complementary 
+third, we propose
 symmetrization mechanisms and analyze their properties (\cref{sec:symmetrization-of-the-variational-posterior}).
 
 \subsection{Preliminaries}
@@ -174,10 +156,10 @@ In this section, we introduce the mathematical tools used throughout this paper.
 \begin{equation}
     q_{\eta}(\theta) = h(\theta) \exp(\eta^{\top} T(\theta) - A(\eta))\,,
 \end{equation}
-where $\eta\in H \subseteq \R^k$ is the \emph{natural parameter}. %defining $q_\eta$. where $h(\theta)$ is the base measure, $\eta \in H \subset \mathbb{R}^{k}$ is the natural parameter, $T(\theta) \in \mathbb{R}^{k}$ is the sufficient statistic, and  is the log-partition function. 
+where $\eta\in H \subseteq \R^k$ is the \emph{natural parameter}.
 Examples of such families include normal, exponential and log-normal distributions.  An exponential family $\mathcal{Q} := \{q_{\eta}(\theta) \mid \eta \in H\}$,  is \emph{regular} if $H$ is open, and \emph{minimal} if the components of $T(\theta)$ are linearly independent.
 
-\paragraph{Group actions and push-forward distributions.} We assume that a group $G$ acts on the input space $\mathcal{X}$, the output space $\mathcal{Y}$, and the parameter space $\Theta$ via representations $\rho_{\mathcal{X}}$, $\rho_{\mathcal{Y}}$, and $\rho_{\Theta}$ respectively. %\jgnote{Say here that $\rho_\Theta$ is such that it's compatible with the representations on the data and that this $\rho_\Theta$ is per layer. Cite \cite{nordenfors2025optimization}}. 
+\paragraph{Group actions and push-forward distributions.} We assume that a group $G$ acts on the input space $\mathcal{X}$, the output space $\mathcal{Y}$, and the parameter space $\Theta$ via representations $\rho_{\mathcal{X}}$, $\rho_{\mathcal{Y}}$, and $\rho_{\Theta}$ respectively.
 Throughout, we assume that $\rho_{\Theta}$ is compatible with the data representations $\rho_{\mathcal{X}}$ and $\rho_{\mathcal{Y}}$ in the following sense:
 \begin{equation} \label{eq:compatibility}
     f(\rho_\mathcal{X}(g)x;\theta) = \rho_\mathcal{Y}(g)f(x;\rho_\Theta(g)^{-1}\theta).
@@ -188,9 +170,7 @@ The choice of $\rho_{\Theta}$, or equivalently the choice of the hidden layer re
     \mathcal{T}_{g} \# q(B) := q(\rho(g)^{-1} B)
 \end{equation}
 for any measurable set $B$, with density
-%\begin{equation}
    $ \mathcal{T}_{g} \# q (\theta) = q(\rho(g)^{-1} \theta) \left|\det D(\rho(g)^{-1}) (\theta)\right|$.
-%\end{equation}
 A distribution $q$ is called $G$-invariant if $\mathcal{T}_{g} \# q = q$ for all $g \in G$.
 
 \paragraph{Bayesian neural networks (BNN) and variational inference (VI).} A neural network is a parametrized function $f(\cdot; \theta): \mathcal{X} \rightarrow \mathcal{Y}$. They define conditional label distributions $p(y\, \vert \, x, \theta) = p(y\, \vert \, f(x;\theta))$. In the Bayesian treatment, we put a prior $p_{0}(\theta)$ on the weights and calculate the posterior $p(\theta \mid \mathcal{D})$ given a dataset $\mathcal{D} = \{(x_{i}, y_{i})\}_{i=1}^{N_{0}}$ via Bayes' rule. However, since the posterior neural network likelihood typically is intractable, one makes a variational inference approximation $q_\eta \in \mathcal{Q}$, and then choose the parameters $\eta$  to maximize the \emph{evidence lower bound} \citep{bishopPatternRecognitionMachine2006}
@@ -207,9 +187,9 @@ The posterior predictive is approximated by Monte Carlo sampling from $q_\eta$:
     \label{eq:post-predictive}
 \end{equation}
 
-\paragraph{Data augmentation.} Given a finite group $G$ and a dataset $\mathcal{D} = \{(x_{i}, y_{i})\}_{i=1}^{N_{0}}$ drawn i.i.d. from a data distribution $P_{\mathcal{X}}$, data augmentation constructs an augmented dataset $\mathcal{D}_{\mathrm{aug}} = \{(gx_{i}, gy_{i}) \mid g \in G, (x_{i},y_{i}) \in \mathcal{D}\}$, expanding the dataset by a factor of $|G|$. %Note that augmentation enriches the training set but does not change the data distribution. 
-One could also consider a  continuous compact group %, the discrete union over $G$ in $\mathcal{D}_{\mathrm{aug}}$ is replaced 
-by sampling finitely many Haar-distributed group elements. %measure $\nu_{G}$; 
+\paragraph{Data augmentation.} Given a finite group $G$ and a dataset $\mathcal{D} = \{(x_{i}, y_{i})\}_{i=1}^{N_{0}}$ drawn i.i.d. from a data distribution $P_{\mathcal{X}}$, data augmentation constructs an augmented dataset $\mathcal{D}_{\mathrm{aug}} = \{(gx_{i}, gy_{i}) \mid g \in G, (x_{i},y_{i}) \in \mathcal{D}\}$, expanding the dataset by a factor of $|G|$.
+One could also consider a  continuous compact group
+by sampling finitely many Haar-distributed group elements.
 This comes with some subtleties that we discuss in \cref{app:continuous-compact-groups}. In the following, we instead restrict to the case of finite $G$. Following the mini-batch scaling convention of \citet{gravesPracticalVariationalInference2011} and \citet{blundell2015}, instead of using the ELBO~\eqref{eq:elbo} directly, we work with a $\beta$-weighted objective:
 \begin{equation}
     \mathcal{L}_{\beta}(\eta) := \underbrace{\tfrac{1}{N}\,\mathbb{E}_{q_{\eta}}[-\log p(\mathcal{D}_{\mathrm{aug}} \mid \theta)]}_{=:\,R_{\mathrm{aug}}(\eta)} + \beta \KL(q_{\eta} \Vert p_{0}),
@@ -222,23 +202,18 @@ If we assume the following invariance of the forward model:
         p(gy \, \vert \, gf(x;\theta)) = p(y\, \vert \, f(x;\theta)),
     \end{equation}
  the compatibility of $\rho_{\Theta}$ with the data representation implies that the augmented likelihood inherits the symmetry of the data. Note that condition \eqref{eq:forward_invariance} is weak -- it is e.g.  satisfied for $y\sim f(x;\theta) +e$ for a $G$-invariant error $e$ -- and furthermore independent of the architecture $f$.
-%If we assume that the forward model is $G$-invariant,
 
 \begin{restatable}[Invariant augmented likelihood]{proposition}{restateinvariantlikelihood}
 \label{prop:invariant-augmented-likelihood}
-    Let $L_{\mathrm{aug}}(\theta) := p(\mathcal{D}_{\mathrm{aug}}\mid\theta)$ be the likelihood of the augmented dataset. Under the compatibility assumption \eqref{eq:compatibility} %of $\rho_{\Theta}$ with $\rho_{\mathcal{X}}, \rho_{\mathcal{Y}}$, 
+    Let $L_{\mathrm{aug}}(\theta) := p(\mathcal{D}_{\mathrm{aug}}\mid\theta)$ be the likelihood of the augmented dataset. Under the compatibility assumption \eqref{eq:compatibility}
     as well as the  invariance assumption~\eqref{eq:forward_invariance},
-    %\begin{equation} \label{eq:forward_invariance}
-    %    p(gy \, \vert \, gf(x;\theta)) = p(y\, \vert \, f(x;\theta)),
-    %\end{equation}
     the likelihood is $G$-invariant:
     \begin{equation}
         L_{\mathrm{aug}}(\rho(g)^{-1}\theta)=L_{\mathrm{aug}}(\theta),\, \forall g \in G,\, \theta \in \Theta\,.
     \end{equation}
 \end{restatable}
 
-The proof is given in \cref{app:proof-of-prop-invariant-augmented-likelihood}. %\begin{remark}Condition \eqref{eq:forward_invariance} is weak -- it is e.g.  satisfied for $y\sim f(x;\theta) +e$ for a $G$-invariant error $e$.
-%¤\end{remark}
+The proof is given in \cref{app:proof-of-prop-invariant-augmented-likelihood}.
 
 \paragraph{Equivariance.}  A single  network $f(\cdot\,;\theta)$ is $G$-equivariant if $f(gx;\theta) = g f(x;\theta)$ for all $x \in \mathcal{X}$, $g \in G$. More generally, the predictive map $F_\eta$ defined in~\eqref{eq:post-predictive} is \emph{$G_\varepsilon$-equivariant} if the equivariance defect \mbox{$\Delta^{\mathrm{eq}}_{F}(\eta)$} is bounded by $\varepsilon$,
 \begin{equation}
@@ -250,8 +225,6 @@ Here, $\nu_G$ denotes the normalized Haar measure on $G$. When $\varepsilon = 0$
 \label{sec:closed-exponential-family-under-group-actions}
 
 Neural networks can learn equivariance efficiently from augmented data only when the parameter space is closed under group transformations \citep{nordenfors2025optimization}. Similarly, in the Bayesian setting, we restrict the variational family to those closed under group transformations. As the following theorem shows, this imposes constraints on the exponential family.
-%Our first result characterizes when a variational family is preserved under group transformations. This closure property is not automatic. If the push-forward falls outside $\mathcal{Q}$, inference requires enlarging the variational family, which can be more expensive. For instance, pushing forward a Gaussian with diagonal covariance matrix through an arbitrary linear map generally produces a Gaussian with a dense covariance matrix. Hence, the family of diagonal Gaussians is not closed. This increases the parameter update cost from $\mathcal{O}(d)$ to $\mathcal{O}(d^{2})$
-%We present the necessary and sufficient conditions for a variational family $\mathcal{Q}$ to be preserved under the group action, i.e., $\mathcal{T}_{g} \# q_{\eta} \in \mathcal{Q}$ for all $g \in G$ and $q_{\eta} \in \mathcal{Q}$. 
 We provide the proof in \cref{app:proof-of-thm-closure-under-push-forward}.
 
 \begin{restatable}[Closure under push-forward]{theorem}{restateclosure}
@@ -263,19 +236,13 @@ A regular minimal exponential family $\mathcal{Q}$ is closed under the push-forw
 \end{align}
 When these conditions hold, $\mathcal{T}_{g} \# q_{\eta} = q_{\eta_{g}}$ where $\eta_{g} = M_{g}^\top\eta + b_{g}$, and the transformation  $\phi_{g}: \eta\mapsto M_{g}^\top\eta + b_{g}$ forms an affine action of $G$ on the space of natural parameters $H$.
 \end{restatable}
-A family $\mathcal{Q}$ is hence closed if and only if there exists an affine representation of the group acting on the ambient space $\R^k$ of the space of natural parameters, that makes $T: \Theta \to \R^k$ invariant, and with respect to which the base measure transforms according to \eqref{eq:base_measure}. %We will  equivariant predictive maps, and later to construct initialization procedures.
+A family $\mathcal{Q}$ is hence closed if and only if there exists an affine representation of the group acting on the ambient space $\R^k$ of the space of natural parameters, that makes $T: \Theta \to \R^k$ invariant, and with respect to which the base measure transforms according to \eqref{eq:base_measure}.
 
-%The theorem says that closure is equivalent to the sufficient statistic transforming affinely and the base measure transforming in a compatible way. The natural parameter transformation $\phi_{g}$ is always affine, consisting of a linear part $\pi(g)(\eta) = M_{g}^{\top} \eta$ and a translation $b_{g}$. This affine structure makes the symmetrization constructions in \cref{sec:symmetrization-of-the-variational-posterior} tractable and computationally efficient.
 
 \begin{example}[Mean-field Gaussian under permutation actions]
     Consider the mean-field Gaussian family $\mathcal{Q} = \{\mathcal{N}(\mu, \mathrm{diag}(\sigma^{2})): \mu \in \mathbb{R}^{d}, \sigma^{2} \in \mathbb{R}^{d}_{>0}\}$ on $\Theta = \mathbb{R}^{d}$. This family has sufficient statistic $T(\theta) = (\theta,\,\theta \odot \theta) \in \mathbb{R}^{d}\oplus \mathbb{R}^d$, constant base measure $h(\theta) = (2 \pi)^{-d/2}$, and natural parameter $\eta = (\eta_{1}, \eta_{2})\in\mathbb{R}^{d}\oplus \mathbb{R}^d$ given by $(\eta_{1})_{i} = \mu_{i} / \sigma_{i}^{2}$ and $(\eta_{2})_{i} = -1/(2 \sigma_{i}^{2})$. 
     
     Let $G$ act on $\Theta$ by a permutation representation $\rho(g) = R_{g}$. Then, both conditions of \cref{thm:closure-under-push-forward} are met: Permutation matrices commute with the Hadamard product, so $T(R_{g}^{-1} \theta) = (R_{g}^{-1} \oplus R_{g}^{-1})T(\theta)$
-    % \begin{equation}
-    %     T(R_{g}^{-1} \theta) = \begin{pmatrix}
-    %         R_{g}^{-1} & 0 \\ 0 & R_{g}^{-1}
-    %     \end{pmatrix} T(\theta),
-    % \end{equation}
     giving $M_{g} = R_{g}^{-1} \oplus R_{g}^{-1}$ and $d_{g} = 0$. Since $|\det R_{g}^{-1}| = 1$ and $h$ is constant, \eqref{eq:base_measure} is fulfilled by $b_{g} = c_{g} = 0$. Using $(R_{g}^{-1})^{\top} = R_{g}$, the induced natural-parameter transformation is
     \begin{equation}
         \phi_{g}(\eta) = M_{g}^{\top} \eta = (R_{g} \oplus R_{g}) \eta,
@@ -284,19 +251,16 @@ A family $\mathcal{Q}$ is hence closed if and only if there exists an affine rep
     \begin{equation}
         \mathcal{T}_{g} \# \mathcal{N}(\mu, \mathrm{diag}(\sigma^{2})) = \mathcal{N}(R_{g} \mu, \mathrm{diag}(R_{g} \sigma^{2})),
     \end{equation}
-    so the family is indeed closed. %The $G$-invariant subspace $H_{G} = \{\eta \mid \phi_{g}(\eta) = \eta, \forall g \in G\}$ consists of natural parameters whose entries are constant on each $G$-orbit of weight indices. By contrast, an orthogonal action that mixes coordinates makes the quadratic block of $T(\rho(g)^{-1}\theta)$ non-affine in $T(\theta)$: closure fails and the diagonal family must be replaced by a full-covariance Gaussian.
+    so the family is indeed closed.
 \end{example}
 
 \subsection{Data augmentation induces equivariance}
 \label{sec:data-augmentation-induces-equivariance}
 
 The representation $\phi_g$ fixes the set of  symmetric parameters
-%\begin{equation}
 $H_G : = \{\eta \in H \, \vert \, \phi_g(\eta)=\eta, \, \forall \, g\in G\}$.
-%\end{equation}
 Just as in the single network case, parameters in $H_G$ correspond to equivariant predictive maps.
 
-%Or main result states that training on the augmented dataset $\mathcal{D}_{\mathrm{aug}}$ with variational inference naturally pushes the optimal posterior towards equivariant solutions and keeps it near\mdnote{I added "near", hope it get better} there \afnote{This is still not entirely true}. We will show that under certain conditions, the set $H_G = \{\eta \in H \mid \phi_{g}(\eta) = \eta,\,\forall g \in G\}$ of invariant natural parameters is preserved by gradient descent dynamics. Note that $H_G$ corresponds to perfectly equivariant posterior predictives.
 
 \begin{proposition}
     For $\eta\in H_G$, $F_\eta$ is $G$-equivariant.
@@ -305,12 +269,9 @@ Just as in the single network case, parameters in $H_G$ correspond to equivarian
     If $\eta\in H_G$, $\mathcal{T}_{g} \# q_{\eta} =q_{\phi_{g}(\eta)}=q_{\eta}$. Hence, if $\theta \sim q_\eta$, $\rho(g)\theta\sim q_{\eta}$ for every $g\in G$. This together with the compatibility assumption implies that $f(gx;\theta) =gf(x;\rho(g^{-1})\theta)\stackrel{\mathrm{d}}{=} gf(x;\theta)$, where the last equality is in distribution. Taking the expectation over $\theta$ yields $F_\eta(gx)=gF_\eta(x)$, which is the claim. 
 \end{proof}
 
-% Our main result concerns the behavior of $H_G$ under gradient descent dynamics. It states that under certain conditions, that we now will present, guarantees that $H_G$ is invariant under the dynamics when the Bayesian network is trained on augmented data. This means that when we initialize $\eta\in H$, the predictive map will in theory remain equivariant throughout training. 
 
-% Let us now present the necessary conditions.
 
 Our main result states that, under the conditions presented below, $H_{G}$ is invariant under gradient descent on augmented data. Initializing $\eta$ there guarantees equivariant $F_\eta$ throughout training.
-%$\eta \in H_G$ hence keeps the predictive map equivariant throughout training.
 
 \begin{assumption}[Invariant prior]
 \label{ass:invariant-prior}
@@ -322,19 +283,14 @@ Our main result states that, under the conditions presented below, $H_{G}$ is in
     $|\det D(\rho(g)^{-1})(\theta)| = 1\,$ for all $g \in G$ and $\theta \in \Theta$.
 \end{assumption}
 
- %Note that 
- Both these assumptions are natural: an invariant prior %corresponds to the 
+ Both these assumptions are natural: an invariant prior
  matches the hypothesis of a $G$-symmetric task,
- %belief that the task is $G$-symmetric, 
-  and volume-preservation is automatic for the, in practice very common, orthogonal actions. %, and we have already discussed the connection of \ref{ass:closed-family} with previous works. %, which are the most common in practice.
- %As for the volume-preservation, it is automatic the action is orthogonal, which is the most common case in practice.
- %when orthogonal group actions encountered in practice (\cref{ass:volume-preserving}).
+  and volume-preservation is automatic for the, in practice very common, orthogonal actions.
 
 \begin{restatable}[Equivariance of VI]{theorem}{restateequivariance}
 \label{thm:equivariance-of-vi}
     \cref{ass:invariant-prior,ass:volume-preserving} imply the following for variational inference using  invariant likelihoods and closed exponential families:
-    %Under \cref{ass:invariant-prior,ass:volume-preserving}, the following holds for invariant likelihoods:
-    \begin{enumerate}[(\roman*)]
+    \begin{enumerate}[label=(\roman*)]
         \item \textbf{Loss invariance.} The loss $\mathcal{L}_{\beta}$ is invariant under the natural parameter transformation:
         \begin{equation}
             \mathcal{L}_{\beta}(\eta) = \mathcal{L}_{\beta}(\phi_{g}(\eta)), \quad \forall g \in G,\, \eta \in H.
@@ -343,32 +299,25 @@ Our main result states that, under the conditions presented below, $H_{G}$ is in
         \begin{equation}
             \nabla_{\eta} \mathcal{L}_{\beta}(\phi_{g}(\eta)) = M_{g}^{-1} \nabla_{\eta} \mathcal{L}_{\beta}(\eta), \quad \forall g \in G,\, \eta \in H.
         \end{equation}
-        Consequently, for $M_{g}$ orthogonal, gradient descent $\mathcal{U}(\eta) = \eta - \alpha \nabla_{\eta} \mathcal{L}_{\beta}(\eta)$ commutes with $\phi_{g}$:%\textbf{} %
-        %¤a gradient descent update $\mathcal{U}(\eta) = \eta - \alpha \nabla_{\eta} \mathcal{L}_{\beta}(\eta)$ commutes with $\phi_{g}$:
-        % Consequently, for any update rule $\mathcal{U}(\eta) = \eta - \alpha \nabla_{\eta} \mathcal{L}_{\beta}(\eta)$ with $M_{g}$ orthogonal, $\mathcal{U}$ commutes with $\phi_{g}$:
-        \begin{equation} \label{eq:update_commute}
+        Consequently, for $M_{g}$ orthogonal, gradient descent $\mathcal{U}(\eta) = \eta - \alpha \nabla_{\eta} \mathcal{L}_{\beta}(\eta)$ commutes with $\phi_{g}$:\begin{equation} \label{eq:update_commute}
             \mathcal{U}(\phi_{g}(\eta)) = \phi_{g}(\mathcal{U}(\eta)).
         \end{equation}
-        \item \textbf{Invariant subspace is preserved.} For $M_{g}$ orthogonal, the equivariant subspace $H_{G}$ %$ := \{\eta \in H \mid \phi_{g}(\eta) = \eta,\,\forall g \in G\}$ 
+        \item \textbf{Invariant subspace is preserved.} For $M_{g}$ orthogonal, the equivariant subspace $H_{G}$
         is preserved by gradient updates: if $\eta^{(0)} \in H_{G}$, then $\eta^{(t)} \in H_{G}$ for all $t \geq 0$.
         \item \textbf{Optimal solutions inherit symmetry.} The set of optimal natural parameters $H^{\ast} = \arg\min_{\eta} \mathcal{L}_{\beta}(\eta)$ is closed under $\phi_{g}$ for all $g \in G$. If the optimum is unique, then $\phi_{g}(\eta^{\ast}) = \eta^{\ast}$.
     \end{enumerate}
 \end{restatable}
 
-The proof is given in \cref{app:proof-of-thm-equivariance-of-vi}. This formalizes the intuition behind data augmentation: by making the training objective symmetric, augmentation ensures that $H_G$ is invariant -- and in the case of a unique minimum, even that the minimum is in $H_G$. % a unique optimal solution inherits the same symmetry. When the optimum is not unique, the solution set forms a $G$-orbit. Property (iii) is what the symmetrization mechanisms of \cref{sec:symmetrization-of-the-variational-posterior} exploit — once the trajectory enters $H_{G}$ it stays there, so a single symmetrization step suffices. %\mdnote{The remaining question is quantitative: how does the gap to the optimal augmented risk scale with the prior, and how does the equivariance defect scale with data and Monte Carlo budget?}The remaining question is quantitative: how close to $H_{G}$ does an unconstrained run get\afnote{Is this really what Theorem 3 addresses?}
+The proof is given in \cref{app:proof-of-thm-equivariance-of-vi}. This formalizes the intuition behind data augmentation: by making the training objective symmetric, augmentation ensures that $H_G$ is invariant -- and in the case of a unique minimum, even that the minimum is in $H_G$.
 
 Note that Theorem~\ref{thm:equivariance-of-vi} does not rely on augmented data directly, only on an invariant likelihood (which is implied by data augmentation according to Proposition~\ref{prop:invariant-augmented-likelihood}). Therefore, the theorem is still applicable when the symmetry is present in the data but unknown.
-%
-%Note that the result does not necessitate augmentation. Instead, the only assumption is an invariant likelihood, which can be the case even when the symmetry group is unknown.
 However in such a case, it is hard to guarantee that the prior is invariant. The next theorem, which we prove in \cref{app:proof-of-thm-prior-independent-convergence}, shows that as the dataset size increases, the effect of a non-invariant prior vanishes.
 
-%, and how does the equivariance defect scale with data and Monte Carlo budget? The next two results address each in turn, with proofs in \cref{app:proof-of-thm-prior-independent-convergence,app:proof-of-thm-complexity-for-G-e-equivariance}.
 
-% The proof is given in \cref{app:proof-of-thm-equivariance-of-vi}. This formalizes the intuition behind data augmentation: by making the training objective symmetric, augmentation ensures that the optimal solution inherits the same symmetry. When the optimum is not unique, the solution set forms a $G$-orbit, and any element of this orbit is equally optimal. (iii) is the key property exploited by the symmetrization mechanisms in \cref{sec:symmetrization-of-the-variational-posterior}: each of geometric averaging, projection, and expansion along orbit produces a posterior in $H_{G}$, and (iii) guarantees that once the trajectory enters $H_{G}$ it stays there, so a single symmetrization step at any point during training suffices to lock the posterior into the equivariant subspace - there is no need to re-apply the operation. In practice, however, an unconstrained training run rarely enters $H_{G}$ on its own: finite data perturbs the loss landscape, the optimizer's internal state need not commute with $\phi_{g}$, and the optimal orbit need not be a singleton. The symmetrization mechanisms of \cref{sec:symmetrization-of-the-variational-posterior} address this gap by deliberately placing the posterior into $H_{G}$, after which (iii) takes over and preserves it.\jgnote{This reads a bit strange, given that you just said that we do symmetrization to get the prefect invariance. Maybe rephrase or move symmetrization somewhere else?} We quantify this gap with two results. The proofs are in \cref{app:proof-of-thm-prior-independent-convergence,app:proof-of-thm-complexity-for-G-e-equivariance}.
 
 \begin{restatable}[Prior-independent convergence]{theorem}{restateconvergence}
 \label{thm:prior-independent-convergence}
-Assume \cref{ass:volume-preserving}, and that the likelihood is invariant. Let $R^{\ast}_{\mathrm{aug}}:= \inf_{\eta}R_{\mathrm{aug}}(\eta)$ and $\eta^{\ast}_{\beta}(p_{0})\in\arg\min_{\eta}\mathcal{L}_{\beta}(\eta; p_{0})$. %Under \cref{ass:volume-preserving} %prop:invariant-augmented-likelihood}, 
+Assume \cref{ass:volume-preserving}, and that the likelihood is invariant. Let $R^{\ast}_{\mathrm{aug}}:= \inf_{\eta}R_{\mathrm{aug}}(\eta)$ and $\eta^{\ast}_{\beta}(p_{0})\in\arg\min_{\eta}\mathcal{L}_{\beta}(\eta; p_{0})$.
 We then have 
 \begin{equation}
     R_{\mathrm{aug}}(\eta^{\ast}_{\beta}(p_{0})) 
@@ -379,7 +328,6 @@ for any prior $p_{0}$, where $C(p_{0}) := \inf_{\eta^{\ast} \in H^{\ast}_{R}} \K
 \end{restatable}
 
 Note that the quantity $C(p_{0})$ measures how well the prior aligns with the risk-optimal orbit. Since $\beta = 1/N$, with sufficient data, it becomes irrelevant. In contrast, $R_{\mathrm{aug}}$ is asymptotically constant; It will almost surely converge to the true likelihood $\mathbb{E}_{\substack{(x,y)\sim P_{\mathcal{X}}}}\mathbb{E}_{g\sim \nu_G}\mathbb{E}_{q_{\eta}}[-\log p((gx,gy) \mid \theta)]$.
-%Since its influence is scaled by % We verify this in \cref{sec:validation-of-theorems}.
 
 Next, we address the fact that the true predictive maps $F_\eta$ in practice must be approximated with finite sample means. This will indeed cause a Monte Carlo equivariance defect $\widehat{\Delta}^{\mathrm{eq}}_{F}(\eta)$ (defined formally in~\eqref{equ:def-delta-hat}), but that defect vanishes with a number of samples grows, at the expected rate, as the following theorem shows (proof in \cref{app:proof-of-thm-complexity-for-G-e-equivariance}). We verify it and \cref{thm:prior-independent-convergence} in \cref{sec:validation-of-theorems}.
 
@@ -388,52 +336,27 @@ Next, we address the fact that the true predictive maps $F_\eta$ in practice mus
 \label{thm:complexity-for-G-e-equivariance}
  Suppose $f(x;\theta)$ is uniformly bounded in $x \in \mathcal{X}$ and 
     $q_{\eta}$-a.s.\ in $\theta$, and that the $G$-action on $\mathcal{Y}$ 
-    is orthogonal. Then there exist constants $C_{\mathrm{data}}$ and $C_{\mathrm{weight}}$ such that, for any fixed $\eta$, with probability at least $1-\delta$ over the $N_0$ i.i.d.\ inputs $x_i \sim P_\mathcal{X}$ and the $T$ i.i.d.\ posterior samples $\theta^{(t)} \sim q_\eta$, the Monte Carlo equivariance defect satisfies %the draw of the data and weight samples,
+    is orthogonal. Then there exist constants $C_{\mathrm{data}}$ and $C_{\mathrm{weight}}$ such that, for any fixed $\eta$, with probability at least $1-\delta$ over the $N_0$ i.i.d.\ inputs $x_i \sim P_\mathcal{X}$ and the $T$ i.i.d.\ posterior samples $\theta^{(t)} \sim q_\eta$, the Monte Carlo equivariance defect satisfies
     \begin{equation}
         \widehat{\Delta}^{\mathrm{eq}}_{F}(\eta) \leq  \Delta^{\mathrm{eq}}_{F}(\eta)+ C_{\mathrm{data}}\sqrt{\frac{\log(2/\delta)}{N_{0}}} + C_{\mathrm{weight}}\sqrt{\frac{\log(2/\delta)}{T}}\,.
     \end{equation}
-    %with $C_{\mathrm{data}} = 2\sqrt{2}\,M^{2}$ and $C_{\mathrm{mc}} = 8\sqrt{2}\,M^{2}$.
-   % where $\widehat{\Delta}^{\mathrm{eq}}_{F}(\eta)$ is the Monte Carlo estimate of the empirical equivariance defect using $T$ posterior samples (defined in \cref{app:proof-of-thm-complexity-for-G-e-equivariance}). The $\mathcal{O}(1/\sqrt{T})$ term is the McDiarmid deviation around the MC estimator's mean, while the $\mathcal{O}(1/T)$ term controls the bias of the squared-norm estimator. For any tolerance $\varepsilon = \varepsilon_{\mathrm{emp}} + \varepsilon_{\mathrm{data}} + \varepsilon_{\mathrm{mc}} + \varepsilon_{\mathrm{bias}} > 0$, it suffices to choose
    In other words, for any $\varepsilon_{0},\varepsilon_{\mathrm{data}}, \varepsilon_{\mathrm{weight}} >0$, if $\Delta_F^{\mathrm{eq}}(\eta)<\varepsilon_0$, it suffices to choose
    \begin{equation}
-        N_{0} \ge \frac{C_{\mathrm{data}}^{2}}{\varepsilon_{\mathrm{data}}^{2}}\log\left(\frac{2}{\delta}\right), \quad T \ge \frac{C_{\mathrm{weight}}^{2}}{\varepsilon_{\mathrm{weight}}^{2}}\log\left(\frac{2}{\delta}\right) %\ \frac{C_{\mathrm{bias}}}{\varepsilon_{\mathrm{bias}}}\right\}
+        N_{0} \ge \frac{C_{\mathrm{data}}^{2}}{\varepsilon_{\mathrm{data}}^{2}}\log\left(\frac{2}{\delta}\right), \quad T \ge \frac{C_{\mathrm{weight}}^{2}}{\varepsilon_{\mathrm{weight}}^{2}}\log\left(\frac{2}{\delta}\right)
     \end{equation}
     in order for
-    %the Monte Carlo equivariance defect 
     $\widehat{\Delta}_F^{\mathrm{eq}}(\eta) < \varepsilon_0 + \varepsilon_{\mathrm{data}}+\varepsilon_{\mathrm{weight}}$ with probability at least $1-\delta$.
-\iffalse
-    Suppose $\|f(x;\theta)\| \le M$ uniformly in $x \in \mathcal{X}$ and 
-    $q_{\eta}$-a.s.\ in $\theta$, and that the $G$-action on $\mathcal{Y}$ 
-    is isometric. Then there exist constants $C_{\mathrm{data}}$, $C_{\mathrm{mc}}$, and $C_{\mathrm{bias}}$ such that
-    \begin{equation}
-        \Delta^{\mathrm{eq}}_{F}(\eta) \leq \widehat{\Delta}^{\mathrm{eq}}_{F}(\eta) + C_{\mathrm{data}}\sqrt{\frac{\log(2/\delta)}{N_{0}}} + C_{\mathrm{mc}}\sqrt{\frac{\log(2/\delta)}{T}} + \frac{C_{\mathrm{bias}}}{T},
-    \end{equation}
-    with $C_{\mathrm{data}} = 2\sqrt{2}\,M^{2}$ and $C_{\mathrm{mc}} = 8\sqrt{2}\,M^{2}$.
-    where $\widehat{\Delta}^{\mathrm{eq}}_{F}(\eta)$ is the Monte Carlo estimate of the empirical equivariance defect using $T$ posterior samples (defined in \cref{app:proof-of-thm-complexity-for-G-e-equivariance}). The $\mathcal{O}(1/\sqrt{T})$ term is the McDiarmid deviation around the MC estimator's mean, while the $\mathcal{O}(1/T)$ term controls the bias of the squared-norm estimator. For any tolerance $\varepsilon = \varepsilon_{\mathrm{emp}} + \varepsilon_{\mathrm{data}} + \varepsilon_{\mathrm{mc}} + \varepsilon_{\mathrm{bias}} > 0$, it suffices to choose
-    \begin{equation}
-        N_{0} \ge \frac{C_{\mathrm{data}}^{2}}{\varepsilon_{\mathrm{data}}^{2}}\log\frac{2}{\delta}, \quad T \ge \max \left\{\frac{C_{\mathrm{mc}}^{2}}{\varepsilon_{\mathrm{mc}}^{2}}\log\frac{2}{\delta},\ \frac{C_{\mathrm{bias}}}{\varepsilon_{\mathrm{bias}}}\right\}
-    \end{equation}
-    such that $\Delta^{\mathrm{eq}}_{F}(\eta) \le \widehat{\Delta}^{\mathrm{eq}}_{F}(\eta) + \varepsilon_{\mathrm{data}} + \varepsilon_{\mathrm{mc}} + \varepsilon_{\mathrm{bias}}$ with probability at least $1-\delta$; provided the optimizer drives $\widehat{\Delta}^{\mathrm{eq}}_{F}(\eta) \le \varepsilon_{\mathrm{emp}}$, we obtain $\Delta^{\mathrm{eq}}_{F}(\eta) \le \varepsilon$\,.
-
-    \fi
 \end{restatable}
 
-% Together, \cref{thm:equivariance-of-vi,thm:prior-independent-convergence,thm:complexity-for-G-e-equivariance} provide a complete picture: data augmentation makes the ELBO landscape symmetric (\cref{thm:equivariance-of-vi}), the symmetrization mechanisms in \cref{sec:symmetrization-of-the-variational-posterior} place the posterior in the invariant subspace where it stays (\cref{thm:equivariance-of-vi}(iii)), and the equivariance defect can be driven below any $\varepsilon$ with sufficient data and Monte Carlo samples (\cref{thm:complexity-for-G-e-equivariance}). We verify these predictions empirically in \cref{sec:validation-of-theorems}.
 
-%We verify both of these theorems %predictions 
-%empirically in \cref{sec:validation-of-theorems}.
 
 \subsection{Symmetrization of the variational posterior}
 \label{sec:symmetrization-of-the-variational-posterior}
 
-% \afnote{Does it really? No, fix}\afnote{\cref{thm:equivariance-of-vi}  guarantees that if we initialize the network invariantly, the optimum will also be. There are many ways to initialize invariantly, though.}\mdnote{Maybe this is ok.}\cref{thm:equivariance-of-vi} guarantees that (i) the set of minimizers $H^{\ast}$ is closed under $\phi_{g}$, so it decomposes into $G$-orbits, and (ii) if the trajectory ever enters $H_{G}$ it stays there. Neither implies that an arbitrary training run converges to a point in $H_{G}$ - optimization may converge to a non-invariant point within the optimal orbit, and finite-step optimizers may drift slowly toward $H_{G}$ without reaching it. We propose two complementary mechanisms to enforce membership in $H_{G}$, each applicable either at initialization or at an intermediate point during training.
 
 According to \cref{thm:equivariance-of-vi}(iii), the space of parameters corresponding to equivariant variational distributions $H_{G}$ is preserved during training. Hence, if we ensure that the parameters lie in $H_{G}$ at some point during training, we will arrive at an equivariant variational posterior at the end of it. Therefore, we propose two complementary mechanisms that place $\eta$ into $H_{G}$, one by projecting an existing posterior, one by constructing the posterior from a smaller base, see Figure~\ref{fig:figureone}.
 
-% According to \cref{thm:equivariance-of-vi}(iii), it suffices to place $\eta$ in $H_{G}$ at any % single 
-% point during training.\jgnote{To achieve what? I think here, we should explain the basic idea we have in Figure 1 and refer to it.} We propose two mechanisms for this: one projects an existing posterior, the other builds it from a smaller base.
 
-%%tells us $H_{G}$ is preserved under training, but an arbitrary run may converge to a non-invariant point of the optimal $G$-orbit. We propose two complementary mechanisms that place $\eta$ into $H_{G}$ — one by projecting an existing posterior, one by constructing the posterior from a smaller base.
 
 
 \paragraph{Orbit averaging.} Given a posterior distribution $q_{\eta}$ at any point during training, we construct a $G$-invariant posterior by averaging its natural parameter over the orbit:
@@ -441,65 +364,51 @@ According to \cref{thm:equivariance-of-vi}(iii), the space of parameters corresp
     \tilde{\eta} = \frac{1}{|G|} \sum_{g \in G} \phi_g(\eta).
     \label{equ:orbit-average}
 \end{equation}
-%Since $\phi_{g}$ is affine (\cref{thm:closure-under-push-forward}) and $H_{G}$ is the fixed-point set of an affine group action, $\tilde{\eta} \in H_{G}$ by construction. 
-We can interpret this operation in two ways: %admits two equivalent characterizations: 
-First, $\tilde{\eta}$ is the natural parameter of the \emph{geometric mean distribution} $\tilde{q}(\eta) \propto \left[\prod_{g \in G} \Big(\mathcal{T}_{g} \# q_{\eta}\Big)(\theta)\right]^{\frac{1}{|G|}}$ (which lies in $\mathcal{Q}$ by \cref{lmm:geometric-mean-invariance-and-membership} in \cref{app:geometric-averaging-stays-in-Q}). Secondly, for orthogonal $\phi_g$, $\tilde{\eta}$ is the orthogonal projection of $\eta$ onto the invariant subspace $H_{G}$ under the Euclidean inner product -- this in particular shows that $\tilde{\eta}\in H_G$. % The two views describe the same operation: a single intervention that moves $\eta$ into $H_{G}$ while preserving membership in $\mathcal{Q}$. Applying the operation at prediction time alone is not beneficial, because $\tilde{\eta}$ collapses variation that the network uses to represent the data and degrades predictive performance.
+We can interpret this operation in two ways:
+First, $\tilde{\eta}$ is the natural parameter of the \emph{geometric mean distribution} $\tilde{q}(\eta) \propto \left[\prod_{g \in G} \Big(\mathcal{T}_{g} \# q_{\eta}\Big)(\theta)\right]^{\frac{1}{|G|}}$ (which lies in $\mathcal{Q}$ by \cref{lmm:geometric-mean-invariance-and-membership} in \cref{app:geometric-averaging-stays-in-Q}). Secondly, for orthogonal $\phi_g$, $\tilde{\eta}$ is the orthogonal projection of $\eta$ onto the invariant subspace $H_{G}$ under the Euclidean inner product -- this in particular shows that $\tilde{\eta}\in H_G$.
 
-The mechanism specializes through the choice of $\rho_{\Theta}$. Let us exemplify this in the case of $C_4$ acting on % consider two cases on a $C_{4}$-equivariant 
-convolutional layers: First, we can define a representation  acting by rotating each individual convolutional channel  and secondly a representation that additionally permutes channel blocks, inspired by group convolutional neural  (GCNNs) from \citet{cohenGroupEquivariantConvolutional2016}. The corresponding average operations on the filters are depicted in % effect of the two average operations are depicted in 
+The mechanism specializes through the choice of $\rho_{\Theta}$. Let us exemplify this in the case of $C_4$ acting on
+convolutional layers: First, we can define a representation  acting by rotating each individual convolutional channel  and secondly a representation that additionally permutes channel blocks, inspired by group convolutional neural  (GCNNs) from \citet{cohenGroupEquivariantConvolutional2016}. The corresponding average operations on the filters are depicted in
 Figure \ref{fig:symmetrization-panels-avg}. We will refer to the former as \textbf{geometric averaging}, and the latter as \textbf{projection}. We derive both in detail in \cref{app:symmetrization-strats}.
 
-%\textbf{geometric averaging}, where $\rho_{\Theta}(g)$ acts on each filter's spatial structure in isolation, enforcing per-filter $C_{4}$-symmetry while leaving the channel arrangement free; and \textbf{projection}, where $\rho_{\Theta}(g)$ additionally permutes channel blocks, tying filters across the $|G|$ channel groups and discarding orbit-orthogonal structure. The two share the same mechanism and differ only in what is preserved versus discarded.
 
-% \cref{fig:symmetrization-panels-avg} illustrates two natural specializations on a $C_{4}$-equivariant convolutional layer: \textbf{geometric averaging}, where $\rho_{\Theta}(g)$ acts on each filter's spatial structure in isolation so that orbit averaging enforces per-filter $C_{4}$-symmetry while leaving the channel arrangement free; and \textbf{projection}, where $\rho_{\Theta}(g)$ additionally permutes channel blocks, so that orbit averaging ties filters across the $|G|$ channel groups and discards any orbit-orthogonal structure that distinguishes them. The two share the same mechanism and differ only in $\rho_{\Theta}$, hence what structure is preserved versus discarded by the projection onto $H_{G}$.
 
 \begin{figure}
     \centering
-    % \includegraphics[width=1\linewidth, trim=0.4cm 0.1cm 0cm 0.5cm, clip]{plots/symmetrization_panels_geom.pdf}
     \includegraphics[width=1\linewidth, trim=0.4cm 1.7cm 0.6cm 1.49cm, clip]{plots/symmetrization_panels_comb.pdf}
     \caption{Two specializations of the orbit averaging \eqref{equ:orbit-average} on the second convolutional layer of a $C_{4}$-equivariant network. Both start from the same $4 \times 4$ block of variational parameters $\eta$.
     }
     \label{fig:symmetrization-panels-avg}
 \end{figure}
 
-% Different choices lead to different timing trade-offs: some leave substantial freedom in the parameterization for subsequent training to exploit, making timing largely inconsequential, while others discard learned structure off $H_{G}$ and are effective only at or near initialization. We make these choices concrete in \cref{sec:symmetrization-on-image-classification} and study the timing trade-offs empirically in \cref{app:trigger-timing-ablation}.
 
 \paragraph{Orbit expansion.} Instead of symmetrizing a general parameter of the intended size, we can also first train a small parameter and then, in a manner inspired by the weight-sharing structure of \\ GCNNs, extend it to an equivariant one of bigger size. Concretely, a base network with $1/|G|$ of the target channel width is trained in Stage 1, yielding a posterior $q_{\eta_{\mathrm{small}}}$. At the start of Stage 2, the network is expanded to full width by inserting rotated versions of each filter in $|G|\times |G|$-blocks (see \cref{fig:symmetrization-panels-gcnn}). We refer to this strategy as \textbf{orbit expansion}.
-%Inspired by the weight-sharing structure of GCNNs, this mechanism arrives at the same equivariant posterior structure from the opposite direction: rather than symmetrizing a wide posterior, it constructs the equivariant posterior by tiling group-transformed copies of a smaller base posterior. A base network with $1/|G|$ of the target channel width is trained in Stage 1, yielding a posterior $q_{\eta_{\mathrm{small}}}$. At the start of Stage 2, the network is expanded to full width by inserting rotated versions of each filter in $|G|\times |G|$-blocks (see \cref{fig:symmetrization-panels-gcnn}).
-%arranging $|G|$ group-transformed copies of the base parameters into a block-circulant arrangement across the channel dimension: each block at position $(i,j)$ carries the copy indexed by the group element $g_{j}g_{i}^{-1}$ that connects the corresponding input and output channel groups. 
 The resulting posterior $q_{\eta_{\mathrm{full}}}$ has a $G$-equivariant block structure at the parameter level. In \cref{app:expansion-along-orbit-filter-arrangement-ablation}, we compare three different expansion strategies.
-%
-%Just as for the averaging strategies, there is more than one way of expanding a small posterior to a big one. In \cref{app:expansion-along-orbit-filter-arrangement-ablation}, we compare three such strategies empirically. %ways of tiling this single base and find that the GCNN-expansion in \cref{fig:symmetrization-panels-gcnn} outperforms the alternatives, whence we use it in the following.
 
 
 
 
-%We also consider another way to ensure that the filters of the network are in a GCNN configuration like on the bottom right in Figure \ref{fig:symmetrization-panels-avg}. Instead of doing it from the inside out, we do it in the other direction: We train a small network, say  with channel width $k$, for a few epochs. Then expand it onto a network with channel width $k\cdot |G|$ by inserting rotated versions of each filter in a $|G|\times |G|$-blocks as in Figure \ref{fig:symmetrization-panels-gcnn}. We refer to this strategy as {\bf orbit expansion}.
 
-% \paragraph{Expansion along orbit.} Inspired by group-equivariant CNNs \citep{cohenGroupEquivariantConvolutional2016}, this mechanism builds the equivariant posterior bottom-up. A base network of width $1/|G|$ is trained in Stage 1, yielding $q_{\eta_{\mathrm{small}}}$. At the start of Stage 2, the network is expanded to full width: each block at position $(i,j)$ in the channel grid is assigned the group-transformed copy $\phi_{g_{j}g_{i}^{-1}}(\eta_{\mathrm{small}})$, giving a block-circulant arrangement (\cref{fig:symmetrization-panels-gcnn}). We compare alternative tilings in \cref{app:expansion-along-orbit-filter-arrangement-ablation}.
 
 
 \begin{figure}
     \centering
-    % \includegraphics[width=1\linewidth, trim=0.4cm 1cm 1.8cm 0.5cm, clip]{plots/symmetrization_panels_bc.pdf}
    \includegraphics[width=1\linewidth, trim=0.2cm 0.9cm 0.8cm 1.0cm, clip]{plots/symmetrization_panels_ds.pdf}
-    \caption{Filter arrangement for orbit expansion under $C_{4}$, starting from a single base filter $\eta$.} %Weight tying $\eta^{(k)} := \phi_{g_{k}}(\eta_{\mathrm{small}})$ produces the inner parameter bank $\{\eta^{(k)}\}_{k=0}^{|G|-1}$, after which the variants differ only in how the inner parameters are tiled.}% \textbf{Top:} the block-circulant arrangement used in the main experiments, with $|G|$ distinct rows. \textbf{Bottom:} a double-shift arrangement, with rows pairing up. The full ablation, including a third GCNN-weight-tied variant, is in \cref{app:expansion-along-orbit-filter-arrangement-ablation}.}
+    \caption{Filter arrangement for orbit expansion under $C_{4}$, starting from a single base filter $\eta$.}
     \label{fig:symmetrization-panels-gcnn}
 \end{figure}
 
 
-% \paragraph{Comparison.} The two mechanisms reach $H_{G}$ from opposite directions: orbit averaging projects an unconstrained posterior into $H_{G}$, while expansion constructs a posterior in $H_{G}$ from a smaller base. After the intervention, $q_{\eta}$ is exactly $G$-invariant at the parameter level in both cases, but subsequent training proceeds without symmetry constraints. Since the optimizer's internal state and finite-batch likelihoods need not commute with $\phi_{g}$, $\eta$ may drift out of $H_{G}$ if this improves the augmented loss; independently, Monte Carlo sampling of $\theta^{(t)} \sim q_{\eta}$ breaks exact predictive equivariance even when $\eta \in H_{G}$, with the residual quantified by \cref{thm:complexity-for-G-e-equivariance}. The resulting equivariance is exact at the trigger time but degraded by the optimizer dynamics after the trigger and the Monte Carlo budget $T$. The trigger-timing trade-offs differ qualitatively between methods, with geometric averaging largely timing-insensitive, projection most effective at the start of training, and expansion benefiting from later triggers; we study these empirically in \cref{app:trigger-timing-ablation}.\jgnote{Let's discuss this. It's not an exact symmetry because of accumulation of numerical errors. But apart from that the distribution is exactly symmetric, right? Only the sampling yields asymmetric samples, of course.} 
 
 \section{Experiments}
-In our experiments, we consider the cyclic group $C_4$ of rotations of multiples of $90^{\circ}$ %$0^{\circ}$, , $180^{\circ}$, and $270^{\circ}$, respectively, 
+In our experiments, we consider the cyclic group $C_4$ of rotations of multiples of $90^{\circ}$
 acting on FashionMNIST \citep{xiao2017fashionmnistnovelimagedataset}. This setup allows us to augment exactly and 
 enables extensive Monte Carlo sampling. Throughout our experiments, we use Gaussian variational distributions which satisfy the constraints of Theorem~\ref{thm:closure-under-push-forward}. In Appendix~\ref{app:variational-family-closure-ablation}, we provide additional ablations for other variational distributions. Code is provided at \href{https://github.com/dmw1998/augment-BNNs}{\texttt{github.com/dmw1998/augment-BNNs}}.
 \subsection{Validation of Theorems}
 \label{sec:validation-of-theorems}
 
-We start by verifing the predictions of \cref{thm:prior-independent-convergence,thm:complexity-for-G-e-equivariance}. We use a Bayesian neural network with two convolutional layers and one linear layer and %trained with full $C_{4}$ augmentation and no posterior symmetrization on FashionMNIST \citep{xiao2017fashionmnistnovelimagedataset}. 
-vary the dataset size $N_{0} \in \{500,\,5000,\,20000,\,50000\}$. For \cref{thm:prior-independent-convergence}, we compare an invariant isotropic Gaussian prior $p_{0} = \mathcal{N}(0,I)$ against a non-invariant prior with means drawn from a normal distribution. Posterior predictives are estimated with $T$ Monte Carlo samples. The results are presented in \cref{fig:theorem-validation}.%, confirm all three predictions.
-
+We start by verifing the predictions of \cref{thm:prior-independent-convergence,thm:complexity-for-G-e-equivariance}. We use a Bayesian neural network with two convolutional layers and one linear layer and
+vary the dataset size $N_{0} \in \{500,\,5000,\,20000,\,50000\}$. For \cref{thm:prior-independent-convergence}, we compare an invariant isotropic Gaussian prior $p_{0} = \mathcal{N}(0,I)$ against a non-invariant prior with means drawn from a normal distribution. Posterior predictives are estimated with $T$ Monte Carlo samples. The results are presented in \cref{fig:theorem-validation}.
 \begin{figure}
     \centering
     \includegraphics[width=1\linewidth]{plots/theorem_validation.pdf}
@@ -510,11 +419,10 @@ vary the dataset size $N_{0} \in \{500,\,5000,\,20000,\,50000\}$. For \cref{thm:
     \label{fig:theorem-validation}
 \end{figure}
 
-\paragraph{Priors.} The empirical defect $\widehat{\Delta}^{\mathrm{eq}}_{F}$ decreases monotonically with $N_{0}$ under both priors, from $0.057 \pm 0.007$ to $0.033 \pm 0.001$ (invariant) and $0.088 \pm 0.003$ to $0.035 \pm 0.001$ (random); the two curves converge as $N_{0}$ grows, %consistent with the $\mathcal{O}(\beta)$ bound in 
-consistent with \cref{thm:prior-independent-convergence}.% where  $\beta = 1/N$ vanishes as the dataset grows.
-
-\paragraph{Monte Carlo complexity.} \cref{thm:complexity-for-G-e-equivariance} predicts that the gap between the $T$-sample Monte Carlo estimate $\widehat{\Delta}^{\mathrm{eq}}_{F}(\eta;T)$ and the true predictive map decays as $\mathcal{O}(1/\sqrt{T})$. We assess this directly by drawing $K=10$ independent $T$-sample estimates at each $T$ and tracking their standard deviation across the $K$ runs. The results are shown in \cref{fig:theorem-validation}(b). The theorem is indeed verified: a $\log$-$\log$ fit of the $K$-fold std  against $T$ %$T \in [16, 4096]$ 
-yields slopes of $-0.45$, $-0.66$, $-0.52$, $-0.51$ for $N_{0} \in \{500,\,5000,\,20000,\,50000\}$ respectively, all close to the predicted $-0.5$. %The rate is essentially independent of $N_{0}$, consistent with the theorem's prediction that the Monte Carlo deviation is controlled solely by the posterior sample budget $T$.
+\paragraph{Priors.} The empirical defect $\widehat{\Delta}^{\mathrm{eq}}_{F}$ decreases monotonically with $N_{0}$ under both priors, from $0.057 \pm 0.007$ to $0.033 \pm 0.001$ (invariant) and $0.088 \pm 0.003$ to $0.035 \pm 0.001$ (random); the two curves converge as $N_{0}$ grows,
+consistent with \cref{thm:prior-independent-convergence}.
+\paragraph{Monte Carlo complexity.} \cref{thm:complexity-for-G-e-equivariance} predicts that the gap between the $T$-sample Monte Carlo estimate $\widehat{\Delta}^{\mathrm{eq}}_{F}(\eta;T)$ and the true predictive map decays as $\mathcal{O}(1/\sqrt{T})$. We assess this directly by drawing $K=10$ independent $T$-sample estimates at each $T$ and tracking their standard deviation across the $K$ runs. The results are shown in \cref{fig:theorem-validation}(b). The theorem is indeed verified: a $\log$-$\log$ fit of the $K$-fold std  against $T$
+yields slopes of $-0.45$, $-0.66$, $-0.52$, $-0.51$ for $N_{0} \in \{500,\,5000,\,20000,\,50000\}$ respectively, all close to the predicted $-0.5$.
 
 \paragraph{Data complexity.} In Figure \ref{fig:theorem-validation}(c), we use $T_{\max} = 1024$ as a proxy for $T \to \infty$ and plot the training gap $\Delta^{\mathrm{eq}}_{F}(\eta) - \widehat{\Delta}^{\mathrm{eq}}_{F}(\eta)$ together with $\mathcal{O}(1 / \sqrt{N_{0}})$ envelope from \cref{thm:complexity-for-G-e-equivariance}, with $C_{\mathrm{data}} \approx 1.95$. The measured gap decreases with $N_0$ in close agreement with the predicted $1/\sqrt{N_0}$ behavior.
 
@@ -522,20 +430,17 @@ yields slopes of $-0.45$, $-0.66$, $-0.52$, $-0.51$ for $N_{0} \in \{500,\,5000,
 \subsection{Symmetrization on image classification}
 \label{sec:symmetrization-on-image-classification}
 
-% We consider the cyclic group $C_{4}$ acting by $\frac{\pi}{2}$ rotations. We evaluate four metrics: (1) classification loss, (2) classification accuracy, (3) orbit same prediction score, and (4) symmetric KL divergence between predictions on original and rotated inputs.
 
-Next, we empirically compare the symmetrization mechanisms from \cref{sec:symmetrization-of-the-variational-posterior}. %- on image classification with the cyclic group $C_{4}$ (rotations of $0^{\circ}$, $90^{\circ}$, $180^{\circ}$, and $270^{\circ}$).
+Next, we empirically compare the symmetrization mechanisms from \cref{sec:symmetrization-of-the-variational-posterior}.
 
 \paragraph{Setup.} We train a convolutional Bayesian neural network with two convolutional layers with 32 and 64 channels, followed by a classification layer using a diagonal Gaussian variational family and a standard isotropic Gaussian prior. The training set consists of 5\,000 randomly chosen FashionMNIST images, each augmented with the full $C_{4}$ orbit (producing 20\,000 training samples). 
 
-The parameter space of each convolutional layer decomposes along the channel dimension. We implement the orbit-averaging mechanism of \cref{sec:symmetrization-of-the-variational-posterior} under two natural choices of $\rho_{\Theta}$ introduced there: \textbf{geometric averaging} (per-filter $C_{4}$-symmetrization, channel arrangement unconstrained) and \textbf{projection} (averaging across filters and channel-block permutation). Both satisfy the closure conditions of \cref{thm:closure-under-push-forward}, so the results of \cref{sec:theory} apply uniformly. \textbf{Orbit expansion} is implemented with the GCNN-expansion from Figure \ref{fig:symmetrization-panels-gcnn}. %of %\cref{app:expansion-along-orbit-filter-arrangement-ablation}. 
-All methods share the same architecture, prior, optimizer, learning rate, epoch count, and number of MC samples; they differ only in when and how the posterior is symmetrized. We use SGD as the optimizer throughout the main text: its update rule is linear in the gradient and therefore commutes exactly with $\phi_{g}$ (\cref{thm:equivariance-of-vi}(ii)), so the equivariant subspace $H_{G}$ is preserved under training. %The theory does not directly extend to adaptive optimizers, but we repeat the comparison under AdamW in \cref{app:trigger-timing-ablation}. %The qualitative trigger timing patterns of each mechanism persist, orbit expansion remains the highest-accuracy mechanism, and all three methods substantially improve equivariance over the baseline.
+The parameter space of each convolutional layer decomposes along the channel dimension. We implement the orbit-averaging mechanism of \cref{sec:symmetrization-of-the-variational-posterior} under two natural choices of $\rho_{\Theta}$ introduced there: \textbf{geometric averaging} (per-filter $C_{4}$-symmetrization, channel arrangement unconstrained) and \textbf{projection} (averaging across filters and channel-block permutation). Both satisfy the closure conditions of \cref{thm:closure-under-push-forward}, so the results of \cref{sec:theory} apply uniformly. \textbf{Orbit expansion} is implemented with the GCNN-expansion from Figure \ref{fig:symmetrization-panels-gcnn}.
+All methods share the same architecture, prior, optimizer, learning rate, epoch count, and number of MC samples; they differ only in when and how the posterior is symmetrized. We use SGD as the optimizer throughout the main text: its update rule is linear in the gradient and therefore commutes exactly with $\phi_{g}$ (\cref{thm:equivariance-of-vi}(ii)), so the equivariant subspace $H_{G}$ is preserved under training.
 
-Each symmetrization mechanism is applied at epoch $n \in \{0, 20, 100\}$ to study the effect of trigger timing (\cref{sec:symmetrization-of-the-variational-posterior}). After the intervention, all methods continue training until epoch 500. As a baseline, we train a randomly initalized network on augmented data.% uses data augmentation with no symmetrization. 
-
+Each symmetrization mechanism is applied at epoch $n \in \{0, 20, 100\}$ to study the effect of trigger timing (\cref{sec:symmetrization-of-the-variational-posterior}). After the intervention, all methods continue training until epoch 500. As a baseline, we train a randomly initalized network on augmented data.
 \paragraph{Metrics.} We report: (1) classification accuracy (\%), (2) orbit same prediction (OSP): the fraction of predictions that agree with the mode on the orbit, averaged over the test set, and (3) symmetric KL divergence between predictive distributions on original and rotated inputs.
 
-%\subsubsection{Results.}
 \begin{wraptable}{r}{0.6\textwidth}
     \centering
     \footnotesize
@@ -577,33 +482,25 @@ Each symmetrization mechanism is applied at epoch $n \in \{0, 20, 100\}$ to stud
     \label{tab:symmetrization-comparison}
     \vspace{-1cm}
 \end{wraptable}
-\paragraph{Results.} Our results are summarized in \cref{tab:symmetrization-comparison}. %We find that in both mechanisms $q_\eta$ is exactly $G$-invariant at the parameter level immediately after the trigger, but subsequent training is unconstrained: the optimizer's internal state need not commute with $\phi_g$, so $\eta$ may drift out of $H_G$ if this lowers the augmented loss. 
+\paragraph{Results.} Our results are summarized in \cref{tab:symmetrization-comparison}.
 First note  that none of our strategies yields perfect equivariance, as expected from the 
-% We stress that this is to be expected, given the %Predictive equivariance carries an additional M
 Monte Carlo residual quantified by \cref{thm:complexity-for-G-e-equivariance}, present even when $\eta \in H_G$. However, all strategies yield more equivariant models, and the orbit expansion model leads to a better overall performance.
 
-We note that the performance across all metrics and strategies generally decreases when the intervention is applied later. This is natural, since a later trigger time exactly corresponds to a shorter training time post re-initalization. OSP and Sym.KL of the geometric average are the only exceptions to this trend, but this decrease is from much better values %a high degree of equivariance 
+We note that the performance across all metrics and strategies generally decreases when the intervention is applied later. This is natural, since a later trigger time exactly corresponds to a shorter training time post re-initalization. OSP and Sym.KL of the geometric average are the only exceptions to this trend, but this decrease is from much better values
 compared to all other methods. 
 
 The orbit expansion yields the best results. We hypothesize that the reason for this is that the orbit expansion results in parameters with additional symmetries compared to the orbit averaging techniques, due to the restricted number of base filters (cf.\ Figures~\ref{fig:symmetrization-panels-gcnn} and~\ref{fig:orbit-expansion-arrangements}).
-%e.g. projection -- on top of the filters along each diagonal in the $4\times 4$ arrangement in \cref{fig:symmetrization-panels-gcnn} being rotations of each other, the ``base-filters'' are also (see \cref{fig:orbit-expansion-arrangements}). 
 These additional symmetries seem to induce more stability. To further explore such effects however remains future work.
 
 
 In \cref{app:trigger-timing-ablation} we repeat the comparison with AdamW, whose adaptive rescaling violates the update commutation \eqref{eq:update_commute}; there an earlier trigger \emph{hurts} equivariance, so $H_{G}$ is less stable. This is further evidence for the correctness of our theory.
 
-% In Appendix \ref{app:trigger-timing-ablation}, we provide further experiments. In particular, we study the performance of our strategies when applied together with AdamW, daptive per-coordinate
-% rescaling does not satisfy the update commutation \eqref{eq:update_commute}. Its behavior is different compared to SGD -- while  the equivariance in general is increased by all strategies, an earlier trigger timing \emph{hurts} equivariance for them, and $H_G$ thus seems to be less stable. This confirms the relevance of our theory even more. 
 
 
-%Trigger timing matters and differs by mechanism — geometric averaging is largely timing-insensitive, projection is effective only near initialization, and expansion benefits from later triggers; we study this empirically in \cref{app:trigger-timing-ablation}.
 
 
-%\textbf{Orbit expansion achieves the best accuracy and equivariance simultaneously.} Orbit expansion improves over the baseline on every metric at every trigger time. Unlike the other mechanisms, expansion does not trade accuracy for equivariance, because the model inherits useful features from pre-trained small model. Additionally, it even reduces the training cost.
 
-%\textbf{Geometric averaging yields strong equivariance at a small accuracy cost.} Geometric averaging reduce the symmetric KL divergence by more than a half while staying within $0.4\%$ of accuracy at the earliest trigger time. Its metrics are nearly flat across trigger epochs, since it lack of group structure among channels.
 
-%\textbf{Projection is effective when %applied at initialization.} Applied at epoch 0, this is equivalent to training from an equivariant initialization. The  posterior starts in $H_{G}$, which provide a clear instance of \cref{thm:equivariance-of-vi} (iii). In this regime projection improves equivariance over the baseline (symmetric KL $0.0174$ vs $0.0217$, OSP $0.931$ vs $0.927$) at essentially no accuracy cost ($78.4\%$ vs $79.0\%$).
 
 
 
@@ -613,45 +510,6 @@ Throughout our work, we have made a number of assumptions that limit the scope o
 
 \subsection*{Acknowledgments} This work was partially supported by the Wallenberg AI, Autonomous Systems and Software Program (WASP) funded by the Knut and Alice Wallenberg Foundation. The computations were enabled by resources provided by the National Academic Infrastructure for Supercomputing in Sweden (NAISS), partially funded by the Swedish Research Council through grant agreement no. 2025/22-1341.
 
-% \begin{table}[t]
-%     \centering
-%     \small
-%     \setlength{\tabcolsep}{4pt}
-%     \begin{tabular}{@{}ll ccc@{}}
-%     \toprule
-%     \textbf{Method} & \textbf{Epoch}
-%       & \textbf{Acc.\,(\%)} $\uparrow$ 
-%       & \textbf{OSP} $\uparrow$ 
-%       & \textbf{Sym.\,KL} $\downarrow$ \\
-%     \midrule
-%     Baseline & --- 
-%       & $\mathbf{78.6}{\scriptstyle\pm0.7}$ 
-%       & $0.919{\scriptstyle\pm.006}$ 
-%       & $0.0254{\scriptstyle\pm.0028}$ \\
-%     \midrule
-%     \multirow{3}{*}{Geometric avg.}
-%       & 0  & $77.3{\scriptstyle\pm0.7}$ & $0.946{\scriptstyle\pm.003}$ & $0.0109{\scriptstyle\pm.0004}$ \\
-%       & 50 & $77.8{\scriptstyle\pm0.8}$ & $0.945{\scriptstyle\pm.005}$ & $0.0121{\scriptstyle\pm.0028}$ \\
-%       & 100 & $77.4{\scriptstyle\pm0.6}$ & $0.940{\scriptstyle\pm.007}$ & $0.0138{\scriptstyle\pm.0022}$ \\
-%     \midrule
-%     \multirow{3}{*}{Projection}
-%       & 0  & $78.4{\scriptstyle\pm0.6}$ & $0.925{\scriptstyle\pm.006}$ & $0.0215{\scriptstyle\pm.0026}$ \\
-%       & 50 & $74.6{\scriptstyle\pm1.0}$ & $0.907{\scriptstyle\pm.005}$ & $0.0272{\scriptstyle\pm.0012}$ \\
-%       & 100 & $75.3{\scriptstyle\pm1.0}$ & $0.917{\scriptstyle\pm.004}$ & $0.0212{\scriptstyle\pm.0016}$ \\
-%     \midrule
-%     \multirow{3}{*}{Orbit expansion}
-%       & 0 & $77.7{\scriptstyle\pm0.7}$ & $0.933{\scriptstyle\pm.007}$ & $0.0167{\scriptstyle\pm.0029}$ \\
-%       & 50 & $77.8{\scriptstyle\pm0.5}$ & $0.942{\scriptstyle\pm.004}$ & $0.0126{\scriptstyle\pm.0019}$ \\
-%       & \cellcolor{gray!15}100 & \cellcolor{gray!15}$78.3{\scriptstyle\pm0.7}$ & \cellcolor{gray!15}$\mathbf{0.952}{\scriptstyle\pm.005}$ & \cellcolor{gray!15}$\mathbf{0.0085}{\scriptstyle\pm.0012}$ \\
-%     \bottomrule
-%     \end{tabular}
-%     \caption{Effect of symmetrization mechanism and timing on FashionMNIST
-%     ($N_{0} = 5\,000$, $C_4$ augmentation, 10\,000 test samples).
-%     Results are mean $\pm$ std over 5 seeds.
-%     \textbf{Bold}: best in each column.
-%     \colorbox{gray!15}{Shaded}: best equivariance--accuracy trade-off.}
-%     \label{tab:symmetrization-comparison}
-% \end{table}
 
 \bibliography{references}
 \bibliographystyle{iclr2026_conference}
@@ -695,9 +553,6 @@ It should be noted that in practice we will always need to work on a sampled aug
 \restateinvariantlikelihood*
 
 \begin{proof}
-  %  \begin{equation}
-   %     h \mathcal{D}_{\mathrm{aug}} := \{(hgx_{i}, hgy_{i}) \mid g \in G, (x_{i}, y_{i}) \in \mathcal{D}\} = \{(g'x_{i}, g'y_{i}) \mid g' \in G, (x_{i}, y_{i}) \in \mathcal{D}\} = \mathcal{D}_{\mathrm{aug}}
-    %\end{equation}
 The  compatibility of $\rho_{\Theta}$ \eqref{eq:compatibility} with the data representations implies that for any $g \in G$ and any input $x \in \mathcal{X}$,
     \begin{equation}
         f(gx;\theta) = g f(x;  \rho(g) ^{-1}\theta),
@@ -721,20 +576,6 @@ The  compatibility of $\rho_{\Theta}$ \eqref{eq:compatibility} with the data rep
         &= \prod_{(x,y) \in \mathcal{D}_{\mathrm{aug}}}  p((x,y) \, \vert \, \theta) = L_{\mathrm{aug}}(\theta),
     \end{align}
     where (*) follows from the fact that $\mathcal{D}_{\mathrm{aug}}$ is closed under group transformations: $h\mathcal{D}_{\mathrm{aug}}=\mathcal{D}_{\mathrm{aug}}$ for any $h\in G$.
-    \iffalse
-    For standard likelihood models where $p((x,y) \mid \theta)$ depends on $\theta$ only through $f(x; \theta)$ and the conditional density $p(y \mid f(x; \theta))$ is itself $G$-invariant in the sense that $p(gy \mid g f(x; \theta)) = p(y \mid f(x; \theta))$, we obtain
-    \begin{equation}
-        p((gx,gy) \mid \theta) = p((x,y) \mid \rho(g)^{-1}\theta).
-    \end{equation}
-    Hence,
-    \begin{align}
-        L_{\mathrm{aug}}(\rho(g)^{-1}\theta) &= \prod_{(x',y') \in \mathcal{D}_{\mathrm{aug}}} p((x', y') \mid \rho(g)^{-1} \theta) \\
-        &= \prod_{(x',y') \in \mathcal{D}_{\mathrm{aug}}} p((gx', gy') \mid \theta) \\
-        &= \prod_{(x'', y'') \in g \mathcal{D}_{\mathrm{aug}}} p((x'', y'') \mid \theta) \\
-        &= \prod_{(x, y) \in \mathcal{D}_{\mathrm{aug}}} p((x, y) \mid \theta) \\
-        &= L_{\mathrm{aug}}(\theta)
-    \end{align}
-    \fi
  \end{proof}
 
 
@@ -923,7 +764,7 @@ The  compatibility of $\rho_{\Theta}$ \eqref{eq:compatibility} with the data rep
 \restateconvergence*
 
 \begin{proof}
-    Note that the log-likelihood does not depend on the prior. Hence, using the same calculation as in the proof of Theorem \ref{thm:equivariance-of-vi} (i), %of \cref{thm:equivariance-of-vi} (i)%  — which uses only \cref{prop:invariant-augmented-likelihood,ass:volume-preserving}, not the prior — shows that
+    Note that the log-likelihood does not depend on the prior. Hence, using the same calculation as in the proof of Theorem \ref{thm:equivariance-of-vi} (i),
     we show that $R_{\mathrm{aug}}$ is $G$-invariant on the natural parameter space:
     \begin{equation}
         R_{\mathrm{aug}}(\phi_{g}(\eta)) = R_{\mathrm{aug}}(\eta), \quad \forall g \in G,\, \eta \in H.
@@ -952,7 +793,7 @@ The  compatibility of $\rho_{\Theta}$ \eqref{eq:compatibility} with the data rep
 \section{Proof of \cref{thm:complexity-for-G-e-equivariance}}
 \label[app]{app:proof-of-thm-complexity-for-G-e-equivariance}
 
-Before stating the proof, we recall the definitions of the empirical and Monte Carlo equivariance defects. %, and make the boundedness assumption from the main text explicit.
+Before stating the proof, we recall the definitions of the empirical and Monte Carlo equivariance defects.
 
 \begin{definition}[Empirical and Monte Carlo equivariance defects]
     Given a dataset $\{x_{i}\}_{i=1}^{N_{0}}$, the empirical equivariance defect is
@@ -968,10 +809,6 @@ Before stating the proof, we recall the definitions of the empirical and Monte C
     where $\{\theta^{(t)}\}_{t=1}^{T}$ are i.i.d.\ samples from $q_{\eta}(\theta)$.
 \end{definition}
 
-%\begin{assumption}[Boundedness and isometry]
-%\label{ass:boundedness-isometry}
-%    There exists $M > 0$ such that $\|f(x;\theta)\| \le M$ for all $x \in \mathcal{X}$ and $q_{\eta}$-a.s.\ $\theta$. Moreover, the group action on $\mathcal{Y}$ is isometric, i.e., $\|gy\| = \|y\|$ for all $g \in G$ and $y \in \mathcal{Y}$.
-%\end{assumption}
 
 
 
@@ -980,18 +817,6 @@ We now restate \cref{thm:complexity-for-G-e-equivariance} and prove it thereafte
 \restatecomplexity*
 
 \begin{proof}
-\iffalse
-   We first derive a uniform bound on the point-wise equivariance defect from \cref{ass:boundedness-isometry}. By Jensen's inequality applied to the norm,
-    \begin{equation}
-        \|F_{\eta}(x)\| = \|\mathbb{E}_{q_{\eta}}[f(x;\theta)]\| \le \mathbb{E}_{q_{\eta}}[\|f(x;\theta)\|] \le M.
-    \end{equation}
-    Then for any $x \in \mathcal{X}$ and $g \in G$, using the isometry of the group action,
-    \begin{equation}
-        \|F_{\eta}(gx) - g F_{\eta}(x)\| \le \|F_{\eta}(gx)\| + \|g F_{\eta}(x)\| = \|F_{\eta}(gx)\| + \|F_{\eta}(x)\| \le 2M,
-    \end{equation}
-    hence $\|F_{\eta}(gx) - g F_{\eta}(x)\|^{2} \le 4M^{2}$.
-
-\fi
 
 Suppose that there exists $M > 0$ such that $\|f(x;\theta)\| \le M$ for all $x \in \mathcal{X}$ and $q_{\eta}$-a.s.\ $\theta$. Let us begin by noting that a simple application of Jensen's inequality shows that for each $x$,
 \begin{align}
@@ -1062,51 +887,15 @@ Hence, the quantities we need to estimate are essentially sums of i.i.d. bounded
     \end{align}
     which yields the first claim with $C_{\mathrm{weight}}= C_{\mathrm{mc}} + C_{\mathrm{bias}}\cdot\sqrt{1/\log(2)}$.
 
-    \iffalse
-    The empirical defect $\widetilde{\Delta}^{\mathrm{eq}}_{F}$ and the Monte Carlo estimator $\widehat{\Delta}^{\mathrm{eq}}_{F}$ are related through their means: by the McDiarmid bound above and the bias bound,
-    \begin{equation}
-        \widetilde{\Delta}^{\mathrm{eq}}_{F}(\eta) \le \mathbb{E}[\widehat{\Delta}^{\mathrm{eq}}_{F}(\eta)] \le \widehat{\Delta}^{\mathrm{eq}}_{F}(\eta) + C_{\mathrm{mc}}\sqrt{\frac{\log(2/\delta)}{T}},
-    \end{equation}
-    which, combined with the bias inequality $\mathbb{E}[\widehat{\Delta}^{\mathrm{eq}}_{F}(\eta)] \le \widetilde{\Delta}^{\mathrm{eq}}_{F}(\eta) + C_{\mathrm{bias}}/T$, yields
-    \begin{equation}
-        \widetilde{\Delta}^{\mathrm{eq}}_{F}(\eta) \le \widehat{\Delta}^{\mathrm{eq}}_{F}(\eta) + C_{\mathrm{mc}}\sqrt{\frac{\log(2/\delta)}{T}} + \frac{C_{\mathrm{bias}}}{T},
-    \end{equation}
-    with $C_{\mathrm{mc}} = 8\sqrt{2}\,M^{2}$ and $C_{\mathrm{bias}} = 8 M^{2}$. Combining this with the Step 1 bound via a union bound over the two failure events (the Hoeffding bound and the McDiarmid bound) yields, with probability at least $1-\delta$,
-    \begin{equation}
-        \Delta^{\mathrm{eq}}_{F}(\eta) \leq \widehat{\Delta}^{\mathrm{eq}}_{F}(\eta) + C_{\mathrm{data}}\sqrt{\frac{\log(2/\delta)}{N_{0}}} + C_{\mathrm{mc}}\sqrt{\frac{\log(2/\delta)}{T}} + \frac{C_{\mathrm{bias}}}{T}.
-    \end{equation}
-
-    \fi
     \paragraph{Step 4: Sample requirements.} For the decomposition $\varepsilon = \varepsilon_{0} + \varepsilon_{\mathrm{data}} + \varepsilon_{\mathrm{weight}} + \varepsilon_{\mathrm{bias}}$, requiring each term in the bound to be at most its allotted budget gives
     \begin{equation}
         C_{\mathrm{data}}\sqrt{\frac{\log(2/\delta)}{N_{0}}} \leq \varepsilon_{\mathrm{data}}, 
         \quad 
         C_{\mathrm{weight}}\sqrt{\frac{\log(2/\delta)}{T}} \leq \varepsilon_{\mathrm{weight}}.
-        %\quad
-        %\frac{C_{\mathrm{bias}}}{T} \le \varepsilon_{\mathrm{bias}}.
     \end{equation}
     Squaring and solving for $N_{0}$ and $T$ yields the stated requirements.
-    \iffalse
-    \begin{equation}
-        N_{0} \ge \frac{C_{\mathrm{data}}^{2}}{\varepsilon_{\mathrm{data}}^{2}}\log\frac{2}{\delta}, 
-        \qquad 
-        T \ge \max \left\{\frac{C_{\mathrm{mc}}^{2}}{\varepsilon_{\mathrm{mc}}^{2}}\log\frac{2}{\delta},\ \frac{C_{\mathrm{bias}}}{\varepsilon_{\mathrm{bias}}}\right\}.
-    \end{equation}
-    If the optimizer further ensures $\widehat{\Delta}^{\mathrm{eq}}_{F}(\eta) \leq \varepsilon_{\mathrm{emp}}$, then $\Delta^{\mathrm{eq}}_{F}(\eta) \leq \varepsilon$ with probability at least $1-\delta$.
-
-    \fi
 \end{proof}
 
-\iffalse
-\begin{remark}[Tightness in the small-defect regime]
-\label{rem:mc-rate-small-defect}
-    The $O(1/\sqrt{T})$ rate in Step 2 is the worst-case McDiarmid bound. Writing $\mu_{T} := \widehat{F}_{\eta}(gx) - g \widehat{F}_{\eta}(x)$ and $\mu_{\infty} := F_{\eta}(gx) - g F_{\eta}(x)$, the identity
-    \begin{equation}
-        \|\mu_{T}\|^{2} - \|\mu_{\infty}\|^{2} = \langle \mu_{T} - \mu_{\infty},\ \mu_{T} + \mu_{\infty}\rangle
-    \end{equation}
-    shows that the leading $O(1/\sqrt{T})$ contribution scales with $\|\mu_{\infty}\|$. As the model approaches equivariance, $\|\mu_{\infty}\| \to 0$ and only the second-order $O(1/T)$ term remains. This is consistent with the empirical $O(1/T)$ decay observed in \cref{fig:theorem-validation}(b), where the bound holds with substantial slack in the small-defect regime.
-\end{remark}
-\fi
 
 \section{Geometric averaging stays in $\mathcal{Q}$}
 \label[app]{app:geometric-averaging-stays-in-Q}
@@ -1143,9 +932,6 @@ Hence, the quantities we need to estimate are essentially sums of i.i.d. bounded
     which is of the standard exponential-family form with the stated $\tilde{\eta}$ and $\tilde{A}$. Invariance follows because for any $g_{0} \in G$, the set $\{\mathcal{T}_{g} \# q\}_{g\in G}$ is permuted under $\mathcal{T}_{g_{0}}$ and the product over $G$ (with equal exponents) is unchanged. Hence $\tilde{q}$ is invariant and belongs to $\mathcal{Q}$.
 \end{proof}
 
-%\begin{remark}
-%    If $M_{g}$ is orthogonal, $\tilde{\eta}$ coincides with the orthogonal Euclidean projection of $\eta$ onto $H_{G}$.
-%\end{remark}
 
 \section{The two orbit averaging strategies}
 \label[app]{app:symmetrization-strats}
@@ -1206,15 +992,10 @@ Let us now discuss the orbit expansion strategy. The idea is to construct a set 
     \includegraphics[width=1\linewidth, trim=0.29cm 0.9cm 0.8cm 1cm, clip]{plots/symmetrization_panels_ds.pdf}
     \caption{Three filter arrangements for orbit expansion under $C_{4}$,
     starting from a single base filter $\eta$ trained in the
-    width-$1/|G|$ Stage 1 network.  All three share the same first row, and only differ in how that row is expanded to the other rows. %inner
-   % filter bank $\{\eta^{(k)} = R^{k}\eta\}_{k=0}^{|G|-1}$ %and differ
-    %only in the outer rotation exponent $\alpha(i)$ applied when tiling
-    %blocks into the $|G|\times|G|$ weight matrix
-   % \eqref{equ:orbit-expansion-template}.
-    \textbf{Top:} Row-constant channel-wise expansion %($\alpha=-i$, 1 distinct row).
-    \textbf{Middle:} Row-rolled channel-wise expansion %($\alpha=0$, $|G|$ distinct rows).
-    \textbf{Bottom:} GCNN-expansion }%($\alpha=+i$, 2 distinct rows).}
-    \label{fig:orbit-expansion-arrangements}
+    width-$1/|G|$ Stage 1 network.  All three share the same first row, and only differ in how that row is expanded to the other rows.
+    \textbf{Top:} Row-constant channel-wise expansion
+    \textbf{Middle:} Row-rolled channel-wise expansion
+    \textbf{Bottom:} GCNN-expansion }\label{fig:orbit-expansion-arrangements}
 \end{figure}
 
 Since there are several notions of equivariance, there are different ways to achieve the equivariance of the larger filterbank. In Appendix~\ref{app:symmetrization-strats}, we have already derived conditions for equivariance when both the input and output representations are equal to $\rho^{\mathrm{ch}}$ and $\rho^{\mathrm{gcnn}}$, respectively. What are the conditions when the representations are unequal? Let us say that the representation on the layer $\gV_1$ is $\rho^{\mathrm{gcnn}}$ and the one on $\gV_2$ is $\rho^{\mathrm{ch}}$. The lifted representation then becomes
@@ -1249,18 +1030,16 @@ Since there are several notions of equivariance, there are different ways to ach
   & \textbf{OSP} $\uparrow$
   & \textbf{Sym.\,KL} $\downarrow$ \\
 \midrule
-\multirow{3}{*}{\shortstack[l]{Row-constant channel-wise \\expansion}} %\eqref{equ:gcnn-weight-tied}}}
+\multirow{3}{*}{\shortstack[l]{Row-constant channel-wise \\expansion}}
   & 0   & $80.2{\scriptstyle\pm0.3}$ & $0.957{\scriptstyle\pm.004}$ & $0.0078{\scriptstyle\pm.0011}$ \\
   & 20  & $80.3{\scriptstyle\pm0.5}$ & $0.956{\scriptstyle\pm.004}$ & $0.0084{\scriptstyle\pm.0014}$ \\
   & 100 & $80.1{\scriptstyle\pm0.5}$ & $0.955{\scriptstyle\pm.003}$ & $0.0086{\scriptstyle\pm.0006}$ \\
 \midrule
-\multirow{3}{*}{\shortstack[l]{Row-rolled channel-wise \\expansion}}%\eqref{equ:block-circulant}}}
-  & 0   & $80.2{\scriptstyle\pm0.3}$ & $0.956{\scriptstyle\pm.004}$ & $0.0084{\scriptstyle\pm.0010}$ \\
+\multirow{3}{*}{\shortstack[l]{Row-rolled channel-wise \\expansion}}& 0   & $80.2{\scriptstyle\pm0.3}$ & $0.956{\scriptstyle\pm.004}$ & $0.0084{\scriptstyle\pm.0010}$ \\
   & 20  & $80.3{\scriptstyle\pm0.5}$ & $0.956{\scriptstyle\pm.004}$ & $0.0088{\scriptstyle\pm.0013}$ \\
   & 100 & $80.1{\scriptstyle\pm0.5}$ & $0.954{\scriptstyle\pm.003}$ & $0.0086{\scriptstyle\pm.0006}$ \\
 \midrule
-\multirow{3}{*}{GCNN-expansion}%\eqref{equ:double-shift-variant}}}
-  & 0   & $\mathbf{80.4}{\scriptstyle\pm0.4}$ & $0.963{\scriptstyle\pm.003}$ & $0.0057{\scriptstyle\pm.0004}$ \\
+\multirow{3}{*}{GCNN-expansion}& 0   & $\mathbf{80.4}{\scriptstyle\pm0.4}$ & $0.963{\scriptstyle\pm.003}$ & $0.0057{\scriptstyle\pm.0004}$ \\
   & 20  & $80.4{\scriptstyle\pm0.6}$ & $0.966{\scriptstyle\pm.004}$ & $0.0048{\scriptstyle\pm.0009}$ \\
   & \cellcolor{gray!15}100 & \cellcolor{gray!15}$80.0{\scriptstyle\pm0.5}$ & \cellcolor{gray!15}$\mathbf{0.968}{\scriptstyle\pm.003}$ & \cellcolor{gray!15}$\mathbf{0.0042}{\scriptstyle\pm.0007}$ \\
 \bottomrule
@@ -1321,7 +1100,6 @@ expansion (FashionMNIST, $N_{0} = 5\,000$, $C_4$ augmentation, SGD,
             \node at (20, 0) {GCNN \cmark};
         \end{tikzpicture}
 \caption{Two ways of choosing the intermediate representations acting on the filter banks. All of the orbit expansion strategies are equivariant with respect to the top choice, but only the GCNN-strategy is equivariant with respect to the bottom choice. 
-%Two ways of defining layerwise equivariant networks in our setting. All of the orbit insertion strategies become equivariant in the first setting, but only the double shift strategy in the second. 
 \label{fig: equivarization}}
         \end{figure}
 
@@ -1340,7 +1118,6 @@ expansion (FashionMNIST, $N_{0} = 5\,000$, $C_4$ augmentation, SGD,
   \textbf{Experiment.} We evaluate all three variants with trigger epochs at 0, 20, and 100, using the same setup as \cref{sec:symmetrization-on-image-classification} (FashionMNIST, $N_{0} = 5\,000$, $C_4$ augmentation, SGD, 5 seeds). \cref{tab:orbit-expansion-ablation} reports metrics at the
 best-accuracy checkpoint (the convention used throughout the paper).
 
-%The double-shift arrangement outperforms both alternatives on every metric at every trigger time. At the best-accuracy checkpoint with trigger epoch 20, it achieves accuracy $80.4\%$, OSP $0.966$, and symmetric KL divergence $0.0048$, compared to $80.3\%$ / $0.956$ / $0.0088$ for block-circulant and $80.3\%$ / $0.956$ / $0.0084$ for GCNN weight-tied. The advantage is robust: the full five-seed range of the double-shift symmetric KL divergence does not overlap those of the other two variants under SGD at any trigger epoch, confirming that the separation is not attributable to seed noise.
 
 The GCNN-expansion arrangement systematically outperformed the row-constant channel-wise expansion and row-rolled channel-wise expansion. This is not surprising given that they are the only ones that are equivariant when the $\rho^{\mathrm{gcnn}}$-representation is acting on all layers, which is the most expressive action in this setting. As we have seen, there are more filters that fulfill the weaker symmetry condition imposed by being equivariant from $\rho^{\mathrm{gcnn}}$ to $\rho^{\mathrm{ch}}$, intuitively leading to a weaker implicit bias. 
 
@@ -1349,110 +1126,6 @@ One can also additionally note that in the GCNN-mode, the outer rotation $R^{-i}
 
 
 
-\iffalse
-\section{Expansion along orbit: filter arrangement ablation}
-\label[app]{app:expansion-along-orbit-filter-arrangement-ablation}
-
-We compare three filter arrangements for the group convolution layers in orbit expansion. All three share the same lifting layer construction $\eta_{[i]} = \varphi_{g_{i}}(\eta_{\mathrm{small}})$, and differ only in how the group convolution layers tile transformed copies of the base posterior into the $|G| \times |G|$ block structure.
-
-\paragraph{Unified formulation} Starting from a single base posterior $\eta_{\mathrm{small}}$ obtained by training a width-$1/|G|$ network in Stage 1, we construct $|G|$ inner filters
-\begin{equation}
-    \eta^{(k)} := \varphi_{g_{k}}(\eta_{\mathrm{small}}) = R^{k} \eta_{\mathrm{small}}, \, k = 0, \dots, |G|-1,
-    \label{equ:orbit-expansion-template}
-\end{equation}
-where $R$ denotes spatial rotation by $2 \pi / |G|$. Each arrangement fills block $(i,j)$ of the expanded weight according to\jgnote{Can we motivate this equation from $\rho_{\mathrm{gcnn}}$?}
-\begin{equation}
-    \eta_{[i,j]} = R^{\alpha(i)} \eta^{((i-j)\bmod |G|)},
-\end{equation}
-where the outer rotation exponent $\alpha(i)$ distinguishes the three variants.
-
-The three choices, their net rotations, and their structural consequences are summarized below and visualized in \cref{fig:orbit-expansion-arrangements}.
-
-\textbf{Row-constant channel-wise expansion.}\jgnote{Maybe we could describe the symmetry properties of all resulting filter banks?} Inspired by the group convolution layer of \citet{cohenGroupEquivariantConvolutional2016}, we set $\alpha(i) = -i$:
-\begin{equation}
-    \eta_{[i,j]} = R^{-i} \eta^{((i-j)\bmod |G|)} = R^{-i}\,R^{i-j} \eta_{\mathrm{small}} = R^{-j}\,\eta_{\mathrm{small}} = \varphi_{g_{(-j)}}(\eta_{\mathrm{small}}).
-    \label{equ:gcnn-weight-tied}
-\end{equation}
-Because the outer $R^{-i}$ exactly cancels the $i$-dependence of the inner index, the net rotation $-j$ depends only on the input group index $j$. All $|G|$ output rows are therefore identical (1 distinct row), and the expanded weight inherits exact $G$-equivariance at initialization.
-
-\textbf{Row-rolled channel-wise expansion.} Dropping the outer rotation entirely, $\alpha(i) = 0$:
-\begin{equation}
-    \eta_{[i,j]} = \eta^{((i-j)\bmod |G|)} = R^{i-j} \eta_{\mathrm{small}} = \varphi_{g_{i-j}}(\eta_{\mathrm{small}}).
-    \label{equ:block-circulant}
-\end{equation}
-The net rotation $i-j$ depends on both indices through their difference, so each row is a cyclic shift of the one above ($|G|$ distinct rows). Without the outer rotation, this arrangement preserves equivariant with respect to spatial transformations only, not the full group action.\jgnote{Why is that?}
-
-\textbf{GCNN-expansion.} Reversing the sign of the outer rotation to $\alpha(i) = +i$:
-\begin{equation}
-    \eta_{[i,j]} = R^{+i} \eta^{((i-j)\bmod |G|)} = R^{+i} R^{i-j} \eta_{\mathrm{small}} = R^{2i-j}\,\eta_{\mathrm{small}} = \varphi_{g_{2i-j}}(\eta_{\mathrm{small}}).
-    \label{equ:double-shift-variant}
-\end{equation}
-The reversed outer rotation prevents the cancellation of $i$. The net  exponent $2i-j$ retains a dependence on the output index, producing rows that repeat in pairs. For $C_{4}$, $2i \bmod 4 \in \{0,2\}$, so rows 0 and 2 are identical and rows 1 and 3 are identical (2 distinct rows). The GCNN-expansion arrangement thus preserves the per-output-block rotation $R^{g_{i}}$ characteristic of the GCNN structure while maintaining non-trivial row-wise diversity.
-
-\begin{remark} \label{rem:label_just}
-    All three variants can be justified through the 'layerwise' construction discussed in Appendix \ref{app:symmetrization-strats}. Consider a layer that operates between a $\gV_1$ on which $\rho^{\mathrm{gcnn}}$ operates, and a $\gV_2$ on which $\rho^{\mathrm{ch}}$ operates. The induced representation $\rho_{\Theta_1}$ then becomes\jgnote{Maybe one can start with this argument and use it to motivate the three different expansions by different choices of the input and output representations?}
-    \begin{align*}
-           (\rho^{}_{\Theta_1}(i)v)_k &= \rho_{\gV_{2}}^{\mathrm{ch}}(i) ([\theta_\ell \circ \rho_{\gV_1}^{\mathrm{gcnn}}(i)^{-1}]v)_k = R^i\sum_{j}\eta^{kj}*(\rho_{\gV_1}^{\mathrm{gcnn}}(i)^{-1}v)_j \\
-    &= R^i\sum_{j}\eta^{kj}*(R^{-i}v_{j-i}) = \sum_{j}(R^i\eta^{k,j+i})*v_j. 
-    \end{align*}
-    Consequently, a layer is equivariant if and only if $R^i\eta^{k,j+i}=\eta^{k,j}$ for all $i,j,k$. In words, that means that the filter within each row in a four-by-four group (as in Figure \ref{fig:orbit-expansion-arrangements}) should be rotations of each other. Clearly, all constructions fulfill these constraints. 
-
-    Importantly, however, the GCNN-expansion construction is special in that it is equivariant between spaces on which $C_4$ is acting through $\rho^{\mathrm{gcnn}}$.
-\end{remark}
-
-
-
-% \textbf{Results.} We evaluate all three variants with triggers at epoch 0, 15, and 30, using the same setup as \cref{sec:symmetrization-on-image-classification} (FashionMNIST, $N_{0} = 5\,000$, $C_4$ augmentation, 5 seeds).
-
-
-
-% The block-circulant variant $\eta_{[i,j]} = \varphi_{g_j g_{i}^{-1}}(\eta_{\mathrm{small}})$ consistently achieves the best equivariance metrics across all trigger timings, with the advantage most pronounced at epoch 30 (OSP 0.945 vs 0.938, Sym. KL 0.011 vs 0.014 compared to G-CNN weight-tied). A clear pattern emerges: more distinct rows in the filter bank leads to better equivariance. The G-CNN weight-tied structure (1 distinct row) performs worst, the double-shift variant (2 distinct rows) is intermediate, and the block-circulant variant ($|G|$ distinct rows) performs best. We hypothesize that greater row-wise diversity provides a more informative initialization for the subsequent unconstrained training, even though only the G-CNN weight-tied structure preserves exact $G$-equivariance. All three variants show improving equivariance with later trigger epochs, confirming that longer base-network pretraining benefits the expanded model regardless of filter arrangement. We use the block-circulant variant throughout the main experiments.
-
-\textbf{Results.} We evaluate all three variants with trigger epochs at 0, 20, and 100, using the same setup as \cref{sec:symmetrization-on-image-classification} (FashionMNIST, $N_{0} = 5\,000$, $C_4$ augmentation, SGD, 5 seeds). \cref{tab:orbit-expansion-ablation} reports metrics at the
-best-accuracy checkpoint (the convention used throughout the paper).
- 
-\begin{table}[t]
-\centering
-\small
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{@{}ll ccc@{}}
-\toprule
-\textbf{Variant} & \textbf{Epoch}
-  & \textbf{Acc.\,(\%)} $\uparrow$
-  & \textbf{OSP} $\uparrow$
-  & \textbf{Sym.\,KL} $\downarrow$ \\
-\midrule
-\multirow{3}{*}{\shortstack[l]{Row-constant channel-wise \\expansion}} %\eqref{equ:gcnn-weight-tied}}}
-  & 0   & $80.2{\scriptstyle\pm0.3}$ & $0.957{\scriptstyle\pm.004}$ & $0.0078{\scriptstyle\pm.0011}$ \\
-  & 20  & $80.3{\scriptstyle\pm0.5}$ & $0.956{\scriptstyle\pm.004}$ & $0.0084{\scriptstyle\pm.0014}$ \\
-  & 100 & $80.1{\scriptstyle\pm0.5}$ & $0.955{\scriptstyle\pm.003}$ & $0.0086{\scriptstyle\pm.0006}$ \\
-\midrule
-\multirow{3}{*}{\shortstack[l]{Row-rolled channel-wise \\expansion}}%\eqref{equ:block-circulant}}}
-  & 0   & $80.2{\scriptstyle\pm0.3}$ & $0.956{\scriptstyle\pm.004}$ & $0.0084{\scriptstyle\pm.0010}$ \\
-  & 20  & $80.3{\scriptstyle\pm0.5}$ & $0.956{\scriptstyle\pm.004}$ & $0.0088{\scriptstyle\pm.0013}$ \\
-  & 100 & $80.1{\scriptstyle\pm0.5}$ & $0.954{\scriptstyle\pm.003}$ & $0.0086{\scriptstyle\pm.0006}$ \\
-\midrule
-\multirow{3}{*}{GCNN-expansion}%\eqref{equ:double-shift-variant}}}
-  & 0   & $\mathbf{80.4}{\scriptstyle\pm0.4}$ & $0.963{\scriptstyle\pm.003}$ & $0.0057{\scriptstyle\pm.0004}$ \\
-  & 20  & $80.4{\scriptstyle\pm0.6}$ & $0.966{\scriptstyle\pm.004}$ & $0.0048{\scriptstyle\pm.0009}$ \\
-  & \cellcolor{gray!15}100 & \cellcolor{gray!15}$80.0{\scriptstyle\pm0.5}$ & \cellcolor{gray!15}$\mathbf{0.968}{\scriptstyle\pm.003}$ & \cellcolor{gray!15}$\mathbf{0.0042}{\scriptstyle\pm.0007}$ \\
-\bottomrule
-\end{tabular}
-\caption{Effect of filter arrangement and trigger timing in orbit
-expansion (FashionMNIST, $N_{0} = 5\,000$, $C_4$ augmentation, SGD,
-5 seeds), evaluated at the best-accuracy checkpoint.
-\textbf{Bold}: best in each column.
-\colorbox{gray!15}{Shaded}: best equivariance-accuracy trade-off.}
-\label{tab:orbit-expansion-ablation}
-\end{table}
-
-The GCNN-expansion arrangement outperforms both alternatives on every metric at every trigger time. At the best-accuracy checkpoint with trigger epoch 20, it achieves accuracy $80.4\%$, OSP $0.966$, and symmetric KL divergence $0.0048$, compared to $80.3\%$ / $0.956$ / $0.0088$ for row-rolled channel-wise expansion and $80.3\%$ / $0.956$ / $0.0084$ for row-constant channel-wise expansion. The advantage is robust: the full five-seed range of the GCNN-expansion symmetric KL divergence does not overlap those of the other two variants under SGD at any trigger epoch, confirming that the separation is not attributable to seed noise.
-
-The row-constant channel-wise expansion and row-rolled channel-wise expansion produce nearly indistinguishable results across all metrics and trigger times, despite having very different structural properties. Both are consistently worse than GCNN-expansion. The reason for this probably lies in the fact that only the GCNN-expansion representation yields layers that are equivariant when the $\rho^{\mathrm{gcnn}}$-representation is acting on all layers, as laid out in Remark \ref{rem:label_just}. They hence enjoy a different type of symmetry, which should yield a more stable structure.
-
-One can also additionally note that in the GCNN-mode, the outer rotation $R^{-i}$ and the inner shift index $(i-j)$ are oriented so that $i$ cancels in their composition, collapsing all rows to a single pattern. This leads to a lack of row-wise diversity, which seems to limit the effective degrees of freedom.
-
-\fi
 
 \section{Variational family closure ablation}
 \label[app]{app:variational-family-closure-ablation}
@@ -1604,9 +1277,7 @@ We compare the equivariance properties of the best model (highest test accuracy)
     \textbf{Left:} test accuracy.  At trigger~150 (dotted line) both
     methods cause a brief collapse and recover, but geometric
     averaging returns almost back to its trigger-0 level
-    while projection does not. % (seeds sensitive), consistent with the
-    %$|G|$-fold reduction in per-block filter diversity that projection
-    %imposes.
+    while projection does not.
     \textbf{Right:} symmetric KL divergence on a log scale. The
     post-trigger drift out of $H_{G}$ has a similar shape and end
     value for both trigger settings within each method, consistent
@@ -1625,17 +1296,12 @@ We compare the equivariance properties of the best model (highest test accuracy)
     $= 20$ epochs; \textbf{Right:} Stage-1 $= 100$ epochs.  Before the dotted
     line both optimizers train the same width-$1/|G|$ base network and their
     curves coincide.  At expansion the symmetric KL of both runs drops to the
-    same near-zero floor. %(${\approx}0.0004$ at epoch~20, ${\approx}0.0002$ at
-   % epoch~100).  
-   During Stage~2 the curves separate: SGD drifts up slowly %(to
-    %$0.0082{\scriptstyle\pm}0.0007$ left and $0.0071{\scriptstyle\pm}0.0005$
-    %right by epoch~500)%, 
+    same near-zero floor.
+   During Stage~2 the curves separate: SGD drifts up slowly
     AdamW faster and with larger seed variance.
-    %($0.0145{\scriptstyle\pm}0.0037$ and $0.0092{\scriptstyle\pm}0.0013$).
     Curves trace the full trajectory to epoch~500;
     \cref{tab:trigger-timing-full} values are at the best-accuracy checkpoint,
-    which for SGD precedes the late drift and is therefore lower. % (e.g.\
-    %$0.0042$ at trigger~100).
+    which for SGD precedes the late drift and is therefore lower.
     }
     \label{fig:gcnn-drift}
 \end{figure}
